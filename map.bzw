@@ -1,0 +1,91 @@
+box
+name Box
+  position 0 0 20
+	rotation 0
+	size 10 10 10
+	drivethrough
+end
+
+box
+name Box copy
+	position 0 0 0
+	rotation 0
+	size 10 10 10
+end
+
+box
+name Box copy
+	position 50 0 0
+	rotation 0
+	size 10 50 20
+end
+
+box
+name Box copy
+	position 0 50 0
+	rotation 0
+	size 50 10 20
+end
+
+box
+name Box copy 1
+	position -50 0 0
+	rotation 0
+	size 10 50 20
+end
+
+zone 1
+name 1
+	position 0 0 10
+	size 10 10 1
+	team 1 2 3 4
+end
+
+
+waterLevel
+ name waterlevel
+ height 1.0
+end
+
+box
+name Box copy 1
+	position 0 -50 0
+	rotation 0
+	size 50 10 20
+end
+
+box
+name Box copy
+	position 25 0 20
+	rotation 0
+	size 20 50 5
+end
+
+box
+name Box copy 1
+	position -25 0 20
+	rotation 0
+	size 20 50 5
+end
+
+box
+name Box copy 1
+	position 0 25 20
+	rotation 0
+	size 50 20 5
+end
+
+box
+name Box copy 2
+	position 0 -25 20
+	rotation 0
+	size 50 20 5
+end
+
+box
+name Box copy 1
+	position 0 0 0
+	rotation 0
+	size 60 60 2
+end
+
