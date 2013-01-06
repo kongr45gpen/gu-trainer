@@ -89,3 +89,25 @@ name Box copy 1
 	size 60 60 2
 end
 
+zone
+	position 0 0 0
+	size 60 60 20
+	team 0 1 2 3 4
+end
+
+zone
+	position 500 500 20
+	size 10 10 1
+	zoneflag G
+	zoneflag GM
+	zoneflag WG
+	zoneflag SW
+	zoneflag OO
+	zoneflag PZ
+	zoneflag V
+end
+
+box
+	position 500 500 20
+	size 10 10 2
+end
