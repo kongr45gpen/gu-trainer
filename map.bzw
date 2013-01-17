@@ -1,113 +1,225 @@
+# World built with bzedit32 world class, available at
+# http://www.sourceforge.net/projects/bzflag
+zone
+name spawn
+	position 0 0 650
+	size 50 50 1
+	rotation 0
+	team 0 1 2 3 4
+end
+
+world
+	name Test
+	size 400
+	flagHeight 0
+end
+
+options
+	-autoTeam
+	-fb
+	-j
+	-disableBots
+	+r
+	-sl g 1
+	-sl gm 15
+	-sl l 15
+	-ms 4
+	-set _reloadTime 2.5
+	-sb
+	-set _wingsJumpCount 5
+	-set _mGunAdVel 6
+	-sl SB 15
+	-sl SW 10
+	-set _srRadiusMult 3
+	-lagdrop 3
+	-lagwarn 350/10
+	-tkannounce
+	-set _thiefAdShotVel 10
+	-set _wallHeight 800
+end
+
+
+box
+name Level 2
+	position 0 0 100
+	rotation 0
+	size 400 400 5
+end
+
+box
+name Level 3
+	position 0 0 200
+	rotation 0
+	size 400 400 5
+end
+
+box
+name Level 4
+	position 0 0 300
+	rotation 0
+	size 400 400 5
+end
+
+box
+name Level 5
+	position 0 0 400
+	rotation 0
+	size 400 400 5
+end
+
+box
+name Level 6
+	position 0 0 500
+	rotation 0
+	size 400 400 5
+end
+
+box
+name Teleporter Level
+	position 0 0 650
+	rotation 0
+	size 100 100 5
+end
+
 box
 name Box
-  position 0 0 20
+	position 0 102 650
 	rotation 0
-	size 10 10 10
-	drivethrough
+	size 100 2 50
 end
 
 box
 name Box copy
-	position 0 0 0
+	position 0 -102 650
 	rotation 0
-	size 10 10 10
-end
-
-box
-name Box copy
-	position 50 0 0
-	rotation 0
-	size 10 50 20
-end
-
-box
-name Box copy
-	position 0 50 0
-	rotation 0
-	size 50 10 20
+	size 100 2 50
 end
 
 box
 name Box copy 1
-	position -50 0 0
-	rotation 0
-	size 10 50 20
-end
-
-zone 1
-name 1
-	position 0 0 10
-	size 10 10 1
-	team 1 2 3 4
-end
-
-
-waterLevel
- name waterlevel
- height 1.0
-end
-
-box
-name Box copy 1
-	position 0 -50 0
-	rotation 0
-	size 50 10 20
-end
-
-box
-name Box copy
-	position 25 0 20
-	rotation 0
-	size 20 50 5
-end
-
-box
-name Box copy 1
-	position -25 0 20
-	rotation 0
-	size 20 50 5
-end
-
-box
-name Box copy 1
-	position 0 25 20
-	rotation 0
-	size 50 20 5
+	position -102 0 650
+	rotation -90
+	size 104 2 50
 end
 
 box
 name Box copy 2
-	position 0 -25 20
+	position 102 0 650
+	rotation -90
+	size 104 2 50
+end
+
+teleporter Level01
+	position 0 95 655
+	size 0.125 10 10
+	rotation 90
+	border 1
+end
+
+teleporter Level05
+	position 0 -95 655
+	size 0.125 10 10
+	rotation 90
+	border 1
+end
+
+teleporter Level03
+	position -95 0 655
+	size 0.125 10 10
 	rotation 0
-	size 50 20 5
+	border 1
 end
 
-box
-name Box copy 1
-	position 0 0 0
+teleporter Level02
+	position -85 85 655
+	size 0.125 10 10
+	rotation -50
+	border 1
+end
+
+teleporter Level06
+	position 95 0 655
+	size 0.125 10 10
 	rotation 0
-	size 60 60 2
+	border 1
 end
 
-zone
-	position 0 0 0
-	size 60 60 20
-	team 0 1 2 3 4
+teleporter Level04
+	position -85 -85 655
+	size 0.125 10 10
+	rotation 50
+	border 1
 end
 
-zone
-	position 500 500 20
-	size 10 10 1
-	zoneflag G
-	zoneflag GM
-	zoneflag WG
-	zoneflag SW
-	zoneflag OO
-	zoneflag PZ
-	zoneflag V
+teleporter Level_1
+	position 385 385 10
+	size 0.125 10 10
+	rotation 50
+	border 1
 end
 
-box
-	position 500 500 20
-	size 10 10 2
+teleporter Level_2
+	position 385 385 115
+	size 0.125 10 10
+	rotation 50
+	border 1
 end
+
+teleporter Level_3
+	position 385 385 215
+	size 0.125 10 10
+	rotation 50
+	border 1
+end
+
+teleporter Level_4
+	position 385 385 315
+	size 0.125 10 10
+	rotation 50
+	border 1
+end
+
+teleporter Level_5
+	position 385 385 415
+	size 0.125 10 10
+	rotation 50
+	border 1
+end
+
+teleporter Level_6
+	position 385 385 515
+	size 0.125 10 10
+	rotation 50
+	border 1
+end
+
+link 
+  from Level01:*
+  to Level_1:*
+end
+
+link 
+  from Level02:*
+  to Level_2:*
+end
+
+link 
+  from Level03:*
+  to Level_3:*
+end
+
+link 
+  from Level04:*
+  to Level_4:*
+end
+
+link 
+  from Level05:*
+  to Level_5:*
+end
+
+link 
+  from Level06:*
+  to Level_6:*
+end
+
