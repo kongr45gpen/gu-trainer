@@ -10,7 +10,7 @@ end
 
 world
 	name Test
-	size 400
+	size 401
 	flagHeight 0
 end
 
@@ -35,46 +35,83 @@ options
 	-lagwarn 350/10
 	-tkannounce
 	-set _thiefAdShotVel 10
-	-set _wallHeight 800
+	-set _wallHeight 0
+end
+
+material
+	name Transparent
+	color 0 0 0 0
 end
 
 define Level
-#A wall at the edge of the world will not ricochet
 	mesh
 		vertex -400 400 0
 		vertex 400 400 0
 		vertex 400 -400 0
 		vertex -400 -400 0
-#		vertex -400 400 6.15
-#		vertex 400 400 6.15
-#		vertex 400 -400 6.15
-#		vertex -400 -400 6.15
+
+		vertex -400 400 6.15
+		vertex 400 400 6.15
+		vertex 400 -400 6.15
+		vertex -400 -400 6.15
+
+		vertex -400 400 100
+		vertex 400 400 100
+		vertex 400 -400 100
+		vertex -400 -400 100
+
 		face Floor
 			texture std_ground
 			vertices 3 2 1 0
 		endface
+
 		face Ceiling
 			texture mesh
 			vertices 0 1 2 3
 		endface
-#		face Wall 1
-#			texture wall
-#			vertices 0 1 5 4
-#		endface
-#		face Wall 2
-#			texture wall
-#			vertices 1 2 6 5
-#		endface
-#		face Wall 3
-#			texture wall
-#			vertices 2 3 7 6
-#		endface
-#		face Wall 4
-#			texture wall
-#			vertices 3 0 4 7
-#		endface
+
+		face Wall 1
+			texture wall
+			vertices 0 1 5 4
+		endface
+		face Border 1
+			shootthrough
+			matref Transparent
+			vertices 4 5 9 8
+		endface
+		face Wall 2
+			texture wall
+			vertices 1 2 6 5
+		endface
+		face Border 2
+			shootthrough
+			matref Transparent
+			vertices 5 6 10 9
+		endface
+		face Wall 3
+			texture wall
+			vertices 2 3 7 6
+		endface
+		face Border 3
+			shootthrough
+			matref Transparent
+			vertices 6 7 11 10
+		endface
+		face Wall 4
+			texture wall
+			vertices 3 0 4 7
+		endface
+		face Border 4
+			shootthrough
+			matref Transparent
+			vertices 7 4 8 11
+		endface
 	end
 enddef
+
+group Level
+	name Level 1
+end
 
 group Level
 	name Level 2
