@@ -5,3 +5,8 @@ GU Trainer Map is a map made by the Reptiles Organisation Blog Foundation (RBOF)
 License
 -------
 The map is licensed under Creative Commons Attribution Non-Commercial Share-Alike
+
+How to use
+----------
+git clone <url> reptiles
+bzfs -conf reptiles/server.conf
