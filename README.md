@@ -8,6 +8,7 @@ The map is licensed under Creative Commons Attribution Non-Commercial Share-Alik
 
 How to use
 ----------
-git clone https://github.com/kongr45gpen/gu-trainer
-cd gu-trainer
-bzfs -conf server.conf
+
+    git clone https://github.com/kongr45gpen/gu-trainer
+    cd gu-trainer
+    bzfs -conf server.conf
