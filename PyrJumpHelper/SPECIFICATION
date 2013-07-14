@@ -11,6 +11,7 @@ It will not be on the multi-level world because we don't have any other levels. 
 
 Map:
 It will be a communal map so that players can still interact.
+Decide: whether the map is just the few relevant map objects (4 pyrs, base, block, 2 ledges and base block) or the whole HIX map. (Less convenient but more likely for people to hang out.)
 
 Plugin:
 Ideally the plugin will guide you through the parts of your jump.
