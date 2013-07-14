@@ -82,28 +82,28 @@ name Teleporter Level
 end
 
 box
-name Box
+name Teleporter Level Wall 1
 	position 0 102 650
 	rotation 0
 	size 100 2 50
 end
 
 box
-name Box copy
+name Teleporter Level Wall 2
 	position 0 -102 650
 	rotation 0
 	size 100 2 50
 end
 
 box
-name Box copy 1
+name Teleporter Level Wall 3
 	position -102 0 650
 	rotation -90
 	size 104 2 50
 end
 
 box
-name Box copy 2
+name Teleporter Level Wall 4
 	position 102 0 650
 	rotation -90
 	size 104 2 50
