@@ -1,0 +1,30 @@
+Goal:
+Produce a map with a plugin that teaches first-timers how to jump up the pyramid in 3 steps:
+1. Twist jump onto pyramid at appropriate height
+2. Adjust height or position if necessary
+3. Jump with a particular turn speed
+
+Scope:
+Aim small as we have no releases and what we need is feedback from the community not large unrealistic plans are better written as a tutorial document (rather than map).
+There will be no bots.
+It will not be on the multi-level world because we don't have any other levels. Also levels is a bad idea - it makes no sense in GU at any level of skill.
+
+Map:
+It will be a communal map so that players can still interact.
+
+Plugin:
+Ideally the plugin will guide you through the parts of your jump.
+1. If you use a command it will "show" you a good ground position to jump from, the speed and rotation (both typically max), and where you would land. For example the plugin can teleport you onto the spot to show it to you. In extreme cases it could even take you through the whole jump??
+2. It will tell you if your jump from current position is impossible (due to height, distance from platform or obstruction), or if possible it will tell you the minimum and maximum turn speeds that will result in successful landing. The intention is to let the learner get their first jumps and get a feel for the required turn speed, and also give the impression that it is a purely technical and quite easy thing to do.
+3. Might be possible to tell them how best to adjust their position, but this will require some clever stuff like A* search which is expensive... (unless precomputed...). This would be the thing to consider latest.
+
+Uncertain:
+Even though aimed at novices, it might be appropriate to describe several variations of the jump e.g. starting from different locations. It is potentially a lot of text and I don't know whether embedding much text in a plugin or on the map help files gives the intended effect, as opposed to an external webpage or PDF describing the above.
+
+Work involved:
+1. Map/server conf
+2. Basic trigonometry
+3. A simple tank simulator in the plugin. We want to avoid using the bzflag client code, but basically:
+A. Good ground and intermediate positions can be hardcoded. This avoids needing to simulate the collision between tank and a pyramid (which technically is just made of finite planes... hmm).
+B. Predicting whether the jump will be successful can be done pretty easily by time stepping through the physics. Read-only code would work fine here, don't even need to write classes for Boxes (the tank and buildings except pyramid are boxes with no incline) and intersections.
+C. Motion adjustment would require a collision detection approach.
