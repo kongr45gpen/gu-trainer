@@ -38,40 +38,67 @@ options
 	-set _wallHeight 800
 end
 
+define Level
+#A wall at the edge of the world will not ricochet
+	mesh
+		vertex -400 400 0
+		vertex 400 400 0
+		vertex 400 -400 0
+		vertex -400 -400 0
+#		vertex -400 400 6.15
+#		vertex 400 400 6.15
+#		vertex 400 -400 6.15
+#		vertex -400 -400 6.15
+		face Floor
+			texture std_ground
+			vertices 3 2 1 0
+		endface
+		face Ceiling
+			texture mesh
+			vertices 0 1 2 3
+		endface
+#		face Wall 1
+#			texture wall
+#			vertices 0 1 5 4
+#		endface
+#		face Wall 2
+#			texture wall
+#			vertices 1 2 6 5
+#		endface
+#		face Wall 3
+#			texture wall
+#			vertices 2 3 7 6
+#		endface
+#		face Wall 4
+#			texture wall
+#			vertices 3 0 4 7
+#		endface
+	end
+enddef
 
-box
-name Level 2
+group Level
+	name Level 2
 	position 0 0 100
-	rotation 0
-	size 400 400 5
 end
 
-box
-name Level 3
+group Level
+	name Level 3
 	position 0 0 200
-	rotation 0
-	size 400 400 5
 end
 
-box
-name Level 4
+group Level
+	name Level 4
 	position 0 0 300
-	rotation 0
-	size 400 400 5
 end
 
-box
-name Level 5
+group Level
+	name Level 5
 	position 0 0 400
-	rotation 0
-	size 400 400 5
 end
 
-box
-name Level 6
+group Level
+	name Level 6
 	position 0 0 500
-	rotation 0
-	size 400 400 5
 end
 
 box
