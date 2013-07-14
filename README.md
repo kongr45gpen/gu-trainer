@@ -12,3 +12,4 @@ How to use
     git clone https://github.com/kongr45gpen/gu-trainer
     cd gu-trainer
     bzfs -conf server.conf
+    bzflag localhost:5181
