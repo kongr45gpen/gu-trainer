@@ -6,25 +6,25 @@ Q & A (for visitors)
 -------
 **Q: What is RO?**
 
-A: Reptiles Organization (R.O.) is an organization that creates maps that help new players in the League with all sorts of tactics, skills.
+A: The Reptiles Organization (R.O.) is an organization which creates maps that help new players in the GU League with all sorts of tactics and skills.
 
-**Q: What is your current map?**
+**Q: Which map are you working on?**
 
-A: R.O. is working on the current map: GU-Trainer ;
+A: R.O. is currently working on a map called GU-Trainer.
 
-**Q: Can public players still play in your maps?**
+**Q: Can anyone play in your maps?**
 
-A: Yes, anyone can come.
+A: Yes, everyone is welcome to join us.
 
-**Q: What are the rules in your maps?**
+**Q: What are the rules on your maps?**
 
-A: R.O. has not decided yet, we do have a basic idea that we will not allow any bad langauge.
+A: R.O. has not decided yet, but we will probably not allow any harsh langauge.
 
-**Q: What are the maps released?**
+**Q: Which of your maps have been released?**
 
-A: None as of 15 July 2013.
+A: None as of July 2013.
 
-Please ask any question, we will then replay back.
+If you have any further questions, don't hesitate to contact us; We'll try to answer them as soon as possible.
 
 License
 -------
