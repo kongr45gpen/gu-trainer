@@ -1,0 +1,58 @@
+options
+#-loadplugin phoenix.so
+-a 0 0
+-ms 3
+-mp 0,20,0,0,0,20
++r
+-j
+-tk
+-noTeamKills
+-jitterwarn 0
+-lagwarn 0
+-packetlosswarn 0
+-set _disableBots true
+-set _explodeTime 0.0
+-set _radarLimit 800
+end
+
+world
+name HiX PyrJumpHelper
+size 100.0
+flagHeight 0.0
+end
+
+zone
+name spawn_near_first_pyr
+pos -85 0 0
+size 1 1 1
+team 1
+end
+
+# red team base
+box
+position 0.0 0.0 26.0
+rotation 45.0
+size 35.0 35.0 4.0
+end
+
+# pyramids under red base
+pyramid
+position 0.0 -45.0 0.0
+rotation 0.0
+size     7.5 7.5 26.0
+end
+pyramid
+position 0.0 45.0 0.0
+rotation 0.0
+size     7.5 7.5 26.0
+end
+pyramid
+position 45.0 0.0 0.0
+rotation 0.0
+size     7.5 7.5 26.0
+end
+pyramid
+position -45.0 0.0 0.0
+rotation 0.0
+size     7.5 7.5 26.0
+end
