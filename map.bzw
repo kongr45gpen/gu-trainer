@@ -174,21 +174,21 @@ name Teleporter Level Wall 4
 end
 
 teleporter Level01
-	position 0 95 655
+	position 0 85 655
 	size 0.125 10 10
 	rotation 90
 	border 1
 end
 
 teleporter Level05
-	position 0 -95 655
+	position 0 -85 655
 	size 0.125 10 10
 	rotation 90
 	border 1
 end
 
 teleporter Level03
-	position -95 0 655
+	position -85 0 655
 	size 0.125 10 10
 	rotation 0
 	border 1
@@ -197,12 +197,12 @@ end
 teleporter Level02
 	position -85 85 655
 	size 0.125 10 10
-	rotation -50
+	rotation -45
 	border 1
 end
 
 teleporter Level06
-	position 95 0 655
+	position 85 0 655
 	size 0.125 10 10
 	rotation 0
 	border 1
@@ -211,7 +211,7 @@ end
 teleporter Level04
 	position -85 -85 655
 	size 0.125 10 10
-	rotation 50
+	rotation 45
 	border 1
 end
 
