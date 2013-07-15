@@ -16,7 +16,8 @@ else
 	#ln -s $MYDIR/Makefile.am pyrJumpHelper/
 	cd $BZDIR
 	make
-	echo "The plugin is now compiled in $BZDIR/plugins/pyrJumpHelper/.libs/"
+	cd $MYDIR
+	ln -s $BZDIR/plugins/pyrJumpHelper/.libs/pyrJumpHelper.so
 fi
 #to undo:
 #remove "plugins/pyrJumpHelper/Makefile" from $BZDIR/configure.ac
