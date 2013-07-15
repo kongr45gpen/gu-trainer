@@ -3,7 +3,7 @@ set -e
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BZDIR=$1
 echo $BZDIR
-if [! -d $BZDIR ]; then
+if [ "$#" != "1" ] || [ ! -d $BZDIR ] ; then
 	echo "Usage: $0 /full/path/to/src/bzflag"
 else
 	cd $BZDIR/plugins
@@ -14,7 +14,7 @@ else
 	#rm pyrJumpHelper/Makefile.am
 	ln -s $MYDIR/pyrJumpHelper.cpp pyrJumpHelper/
 	#ln -s $MYDIR/Makefile.am pyrJumpHelper/
-	cd $BZDIR
+	cd $BZDIR/plugins
 	make
 	cd $MYDIR
 	ln -s $BZDIR/plugins/pyrJumpHelper/.libs/pyrJumpHelper.so
