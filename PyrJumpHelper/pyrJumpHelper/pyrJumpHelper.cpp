@@ -9,7 +9,7 @@
 class pyrJumpHelper : public bz_Plugin, public bz_CustomSlashCommandHandler
 {
 public:
-  virtual const char* Name (){return "pyrJumpHelper";}
+  virtual const char* Name (){return "PyraJump Helper";}
   virtual void Init ( const char* config);
 
   void Cleanup();
