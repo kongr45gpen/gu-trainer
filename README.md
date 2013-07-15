@@ -29,6 +29,10 @@ How to use
 ----------
 
     git clone https://github.com/kongr45gpen/gu-trainer
+    
+    cd gu-trainer/PyrJumpHelper/pyrJumpHelper
+    ./compileme.sh /path/to/your/bzflag/repo
+    
     cd gu-trainer
     bzfs -conf server.conf
     bzflag localhost
