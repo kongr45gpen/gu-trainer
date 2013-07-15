@@ -1,6 +1,6 @@
 GU Trainer Map
 ==============
-GU Trainer Map is a map made by the Reptiles Organisation Blog Foundation (RBOF), aiming to train new players to be able to play efficiently on games of the league.
+GU Trainer Map is a map made by the Reptiles Organisation (R.O.), aiming to train new players to be able to play efficiently on games of the league.
 
 License
 -------
