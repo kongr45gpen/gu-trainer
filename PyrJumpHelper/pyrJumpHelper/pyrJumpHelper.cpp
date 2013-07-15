@@ -4,28 +4,53 @@
 #include "bzfsAPI.h"
 #include "plugin_utils.h"
 
-class pyrJumpHelper : public bz_Plugin
+#define assert(x) { if (!x) bz_sendTextMessagef(BZ_SERVER, BZ_ALLUSERS, "Failed assertion: %s", #x); }
+
+class pyrJumpHelper : public bz_Plugin, public bz_CustomSlashCommandHandler
 {
 public:
-  virtual const char* Name (){return "SAMPLE PLUGIN";}
+  virtual const char* Name (){return "pyrJumpHelper";}
   virtual void Init ( const char* config);
 
+  void Cleanup();
   virtual void Event ( bz_EventData * /* eventData */ ){return;}
+  
+  bool SlashCommand (int playerID, bz_ApiString command, bz_ApiString message, bz_APIStringList *params);
 };
 
 BZ_PLUGIN(pyrJumpHelper)
 
 void pyrJumpHelper::Init ( const char* /*commandLine*/ )
 {
-  bz_debugMessage(4,"pyrJumpHelper plugin loaded");
-
   // init events here with Register();
+  MaxWaitTime = 0.1f;
+  Register(bz_eTickEvent);
+  Register(bz_ePlayerJoinEvent);
+  Register(bz_ePlayerPartEvent);
+  Register(bz_ePlayerUpdateEvent);
+  Register(bz_ePlayerSpawnEvent);
+  Register(bz_eGetPlayerSpawnPosEvent);
+  bz_registerCustomSlashCommand("test", this);
 }
-// Local Variables: ***
-// mode:C++ ***
-// tab-width: 8 ***
-// c-basic-offset: 2 ***
-// indent-tabs-mode: t ***
-// End: ***
-// ex: shiftwidth=2 tabstop=8
 
+void pyrJumpHelper::Cleanup() {
+  bz_removeCustomSlashCommand("test");
+  Flush();
+}
+
+bool isPlayerGrounded(int id) {
+  bz_BasePlayerRecord *b = bz_getPlayerByIndex(id);
+  assert(b);
+  bool ret = !b->lastKnownState.falling;
+  bz_freePlayerRecord(b);
+  return ret;
+}
+
+bool pyrJumpHelper::SlashCommand (int playerID, bz_ApiString command, bz_ApiString message, bz_APIStringList *params) {
+  command.tolower();
+  if (command == "test") {
+    bz_sendTextMessagef(BZ_SERVER, playerID, "Your state is %d", isPlayerGrounded(playerID));
+    return true;
+  }
+  return false;
+}

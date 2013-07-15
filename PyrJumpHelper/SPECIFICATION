@@ -10,8 +10,7 @@ There will be no bots.
 It will not be on the multi-level world because we don't have any other levels. Also levels is a bad idea - it makes no sense in GU at any level of skill.
 
 Map:
-It will be a communal map so that players can still interact.
-Decide: whether the map is just the few relevant map objects (4 pyrs, base, block, 2 ledges and base block) or the whole HIX map. (Less convenient but more likely for people to hang out.)
+It has been decided that the map will be small and without distractions. No tking.
 
 Plugin:
 Ideally the plugin will guide you through the parts of your jump.
@@ -37,3 +36,11 @@ The jumps that we could teach:
 4. Forward jump on side pyr, for shooting
 5. Front on to the side pyr [simple variation of the basic]
 6. Diagonal onto side pyr from under base
+
+Progress:
+. Got the basic map
+
+To be decided:
+- When the jumper potentially needs a hint for how fast to turn while jumping, how do you let him know without spamming?
+  -> Tentative: Detect whether he is on the pyramid and send him a message at most every period (e.g. 2 seconds). If they fell under height 12 then maybe stop telling them that they're too low until they make a fresh start.
+  -> Alternatives: Define a command, but could be disruptive to try and type it.
