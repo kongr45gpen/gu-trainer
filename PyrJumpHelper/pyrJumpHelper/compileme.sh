@@ -14,7 +14,6 @@ else
 	#rm pyrJumpHelper/Makefile.am
 	ln -s $MYDIR/pyrJumpHelper.cpp pyrJumpHelper/
 	#ln -s $MYDIR/Makefile.am pyrJumpHelper/
-	cd $BZDIR/plugins
 	make
 	cd $MYDIR
 	ln -s $BZDIR/plugins/pyrJumpHelper/.libs/pyrJumpHelper.so
