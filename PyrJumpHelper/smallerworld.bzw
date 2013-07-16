@@ -28,6 +28,12 @@ size 1 1 1
 team 1
 end
 
+box
+position 140.0 0.0 0.0
+rotation 0.0
+size     30.0 30.0 15.0
+end
+
 # red team base
 box
 position 0.0 0.0 26.0
