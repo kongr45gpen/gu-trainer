@@ -1,3 +1,9 @@
+Poll: Switch to a new license. Please fill this out wxyz
+==============
+Attribution-ShareAlike 2.5 Generic. In favor: achoopic, Snake, khonk
+
+Attribution-Unported 3.0. In favor: achoopic, alezakos, Snake, khonk
+
 GU Trainer Map
 ==============
 GU Trainer Map is a map made by the Reptiles Organisation (R.O.), aiming to train new players to be able to play efficiently on games of the league.
@@ -38,7 +44,6 @@ How to use
 ----------
 
     git clone https://github.com/kongr45gpen/gu-trainer
-    
     cd gu-trainer
 
     PyrJumpHelper/pyrJumpHelper/compileme.sh /path/to/your/bzflag/repo
