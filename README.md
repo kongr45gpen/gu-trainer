@@ -1,6 +1,7 @@
-Poll: Switch to a new license. Please fill this out unclelightning, wxyz
+Poll: Switch to a new license. Please fill this out wxyz
 ==============
 Attribution-ShareAlike 2.5 Generic. In favor: achoopic, Snake, khonk
+
 Attribution-Unported 3.0. In favor: achoopic, alezakos, Snake, khonk
 
 GU Trainer Map
