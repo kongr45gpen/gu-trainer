@@ -3,7 +3,7 @@ GU Trainer Map
 GU Trainer Map is a map made by the Reptiles Organisation (R.O.), aiming to train new players to be able to play efficiently on games of the league.
 
 Q & A (for visitors)
--------
+--------------------
 **Q: What is RO?**
 
 A: The Reptiles Organization (R.O.) is an organization which creates maps that help new players in the GU League with all sorts of tactics and skills.
