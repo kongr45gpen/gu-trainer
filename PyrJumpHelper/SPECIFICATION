@@ -47,3 +47,4 @@ To be decided:
   -> Alternatives: Define a command, but could be disruptive to try and type it.
 - How to convey basics like read the tank height meter, you can slide down but if you're too low you have to restart, the use of FPS config
 - How to silence the plugin from sending you message, or telling it which jump you're doing? e.g. shot jump
+- How to tell player whether they should adjust position on the pyr (which could involve jumping if its completely wrong) or to restart?
