@@ -122,6 +122,7 @@ void pyrJumpHelper::Init ( const char* /*commandLine*/ )
   Register(bz_ePlayerSpawnEvent);
   Register(bz_eGetPlayerSpawnPosEvent);
   bz_registerCustomSlashCommand("test", this);
+  bz_registerCustomSlashCommand("height", this);
   
   for (int i = 0; i < MaxNumPlayers; i++)
     lastHintTime[i] = 0.0f;
@@ -129,6 +130,7 @@ void pyrJumpHelper::Init ( const char* /*commandLine*/ )
 
 void pyrJumpHelper::Cleanup() {
   bz_removeCustomSlashCommand("test");
+  bz_removeCustomSlashCommand("height");
   Flush();
 }
 
