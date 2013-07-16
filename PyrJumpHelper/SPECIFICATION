@@ -48,3 +48,4 @@ To be decided:
 - How to convey basics like read the tank height meter, you can slide down but if you're too low you have to restart, the use of FPS config
 - How to silence the plugin from sending you message, or telling it which jump you're doing? e.g. shot jump
 - How to tell player whether they should adjust position on the pyr (which could involve jumping if its completely wrong) or to restart?
+- It's too difficult / too much work to detect whether the player is on the inside of the base. It's also quite obvious if you're too far. For now just say you can't make the jump there... if they can't figure that out then...
