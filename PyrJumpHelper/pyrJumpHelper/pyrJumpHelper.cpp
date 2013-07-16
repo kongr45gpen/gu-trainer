@@ -184,7 +184,7 @@ void pyrJumpHelper::pollPlayerHint() {
     
     bz_BasePlayerRecord *b = bz_getPlayerByIndex(id);
     assert(b);
-    if (isPlayerGroundedOnPyrNeedingHint()) {
+    if (isPlayerGroundedOnPyrNeedingHint(b)) {
       GiveHint(b);
     }
     bz_freePlayerRecord(b);
@@ -201,7 +201,7 @@ void pyrJumpHelper::Event(bz_EventData *data) {
   }
 
   float t = bz_getCurrentTime();
-  if (t - lastPollTime > MaxWaitTime) {2
+  if (t - lastPollTime > MaxWaitTime) {
     lastPollTime = t;
     pollPlayerHint();
   }
