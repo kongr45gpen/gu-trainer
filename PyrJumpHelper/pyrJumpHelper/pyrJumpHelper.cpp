@@ -5,6 +5,7 @@
 #include "plugin_utils.h"
 
 #include <cmath>
+#include <string>
 using namespace std;
 
 #define assert(x) { if (!x) bz_sendTextMessagef(BZ_SERVER, BZ_ALLUSERS, "Failed assertion: %s", #x); }
@@ -73,7 +74,7 @@ bool intersects(Rect a, Rect b) {
 #define ADVICE_PERIOD 2.5f
 
 // Above and below this they probably know very well that they won't make the jump so don't pester them
-#define PYR_HEIGHT_LOWEST 10
+#define PYR_HEIGHT_LOWEST 5
 #define PYR_HEIGHT_HIGHEST 22
 #define BASE_HEIGHT 30
 
@@ -159,6 +160,17 @@ bool isPlayerGroundedOnPyrNeedingHint(bz_BasePlayerRecord *b) {
 // E.g. if #1 not satisfied then ONLY tell them this even if their position is also bad.
 void GiveHint(bz_BasePlayerRecord *b) {
   bz_PlayerUpdateState &s = b->lastKnownState;
+  string fpsHint;
+  if (s.pos[2] < MIN_PYR_HEIGHT) {
+    bz_sendTextMessage(BZ_SERVER, b->playerID, "Too low to make the climb");
+  }
+  else if (s.pos[2] < TYP_PYR_HEIGHT) {
+    fpsHint = "Need 30-50 FPS.";
+  }
+  else if (s.pos[2] < MAX_PYR_HEIGHT) {
+    fpsHint = "Need ~50 FPS.";
+  }
+  
 }
 
 // Poll each player to determine whether they need advice
@@ -172,7 +184,7 @@ void pyrJumpHelper::pollPlayerHint() {
     
     bz_BasePlayerRecord *b = bz_getPlayerByIndex(id);
     assert(b);
-    if (isPlayerGroundedOnPyrNeedingHint) {
+    if (isPlayerGroundedOnPyrNeedingHint()) {
       GiveHint(b);
     }
     bz_freePlayerRecord(b);
@@ -189,7 +201,7 @@ void pyrJumpHelper::Event(bz_EventData *data) {
   }
 
   float t = bz_getCurrentTime();
-  if (t - lastPollTime > MaxWaitTime) {
+  if (t - lastPollTime > MaxWaitTime) {2
     lastPollTime = t;
     pollPlayerHint();
   }
