@@ -26,7 +26,7 @@ A: None as of July 2013.
 
 **Q: Who are the active contributors in R.O.?**
 
-A : Snake12534 (Co-Founder), alezakos, khonkhortisan, Pac-Man. These are their bzflag callsigns, names are different in www.github.com.
+A : Snake12534 (Co-Founder), alezakos, khonkhortisan, Pac-Man. These are their bzflag callsigns, names may be different in www.github.com.
 
 **If you have any further questions, don't hesitate to contact us; We'll try to answer them as soon as possible.**
 
