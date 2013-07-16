@@ -75,6 +75,7 @@ bool intersects(Rect a, Rect b) {
 
 // Above and below this they probably know very well that they won't make the jump so don't pester them
 #define PYR_HEIGHT_LOWEST 5
+// Actually you can't even land this high even if you jumped from a block (which is disabled on the map)
 #define PYR_HEIGHT_HIGHEST 22
 #define BASE_HEIGHT 30
 
@@ -107,6 +108,7 @@ private:
   float lastPollTime; // don't poll too often
   float lastHintTime[MaxNumPlayers];
   
+  void GiveHint(bz_BasePlayerRecord *b);
   void pollPlayerHint();
 };
 
@@ -158,7 +160,7 @@ bool isPlayerGroundedOnPyrNeedingHint(bz_BasePlayerRecord *b) {
 // 2. Suitable position.
 // 3. Suitable turn speed.
 // E.g. if #1 not satisfied then ONLY tell them this even if their position is also bad.
-void GiveHint(bz_BasePlayerRecord *b) {
+void pyrJumpHelper::GiveHint(bz_BasePlayerRecord *b) {
   bz_PlayerUpdateState &s = b->lastKnownState;
   string fpsHint;
   if (s.pos[2] < MIN_PYR_HEIGHT) {
@@ -170,7 +172,7 @@ void GiveHint(bz_BasePlayerRecord *b) {
   else if (s.pos[2] < MAX_PYR_HEIGHT) {
     fpsHint = "Need ~50 FPS.";
   }
-  
+  lastHintTime[b->playerID] = bz_getCurrentTime();
 }
 
 // Poll each player to determine whether they need advice
