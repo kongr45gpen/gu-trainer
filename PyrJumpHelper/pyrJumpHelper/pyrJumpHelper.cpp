@@ -8,9 +8,16 @@
 #include <string>
 using namespace std;
 
-#define assert(x) { if (!x) bz_sendTextMessagef(BZ_SERVER, BZ_ALLUSERS, "Failed assertion: %s", #x); }
+#define assert(x) { if (!(x)) { \
+                      bz_sendTextMessagef(BZ_SERVER, BZ_ALLUSERS, "Failed assertion line %d: %s", __LINE__, #x); \
+                      bz_debugMessagef(0, "Failed assertion line %d: %s", __LINE__, #x); \
+                    } \
+                  }
+#define SQR(x) ((x) * (x))
 
 #define EPS (1e-6)
+#define PI acos(-1.0)
+#define TAU (2.0 * PI)
 
 struct Rect {
   float x; // center x
@@ -22,6 +29,7 @@ struct Rect {
 
 // Intervals [a, b], [c, d]
 bool overlap(float a, float b, float c, float d) {
+  bz_debugMessagef(5, "Regions %.2f,%.2f, %.2f,%.2f", a, b, c, d);
   return (c < a && a < d) or (c < b && b < d) or (a < c && c < b) or (a < d && d < b);
 }
 
@@ -41,9 +49,12 @@ bool intersectsHelper(Rect a, Rect b) {
 // B center relative to A
   float b_x = b.x - a.x;
   float b_y = b.y - a.y;
+  bz_debugMessagef(5, "B relative to A is (%.2f, %.2f)", b_x, b_y);
   // B center relative to unrotated A
   float b__x = b_x * cosf(-a.rot) - b_y * sinf(-a.rot);
-  float b__y = b_y * sinf(-a.rot) + b_y * cosf(-a.rot);
+  float b__y = b_x * sinf(-a.rot) + b_y * cosf(-a.rot);
+  bz_debugMessagef(5, "B relative to A unrotated by %.2f is (%.2f, %.2f)", a.rot, b__x, b__y);
+  bz_debugMessagef(5, "Brot %.2f", b.rot - a.rot);
   // B corners relative to unrotated A
   float b_rot = b.rot - a.rot;
   float bx[4] = {
@@ -52,6 +63,7 @@ bool intersectsHelper(Rect a, Rect b) {
     b__x - b.hw * cosf(b_rot) - b.hh * sinf(b_rot),
     b__x - b.hw * cosf(b_rot) + b.hh * sinf(b_rot)
   };
+  bz_debugMessagef(5, "Projections %.2f %.2f %.2f %.2f", bx[0], bx[1], bx[2], bx[3]);
   if (!projectionsOverlap(bx, a.hw)) return false;
 
   float by[4] = {
@@ -60,6 +72,7 @@ bool intersectsHelper(Rect a, Rect b) {
     b__y - b.hw * sinf(b_rot) + b.hh * cosf(b_rot),
     b__y - b.hw * sinf(b_rot) - b.hh * cosf(b_rot)
   };
+  bz_debugMessagef(5, "Projections %.2f %.2f %.2f %.2f", by[0], by[1], by[2], by[3]);
   if (!projectionsOverlap(by, a.hh)) return false;
   return true;
 }
@@ -68,6 +81,26 @@ bool intersectsHelper(Rect a, Rect b) {
 bool intersects(Rect a, Rect b) {
   return intersectsHelper(a, b) && intersectsHelper(b, a);
 }
+
+bool intersectionTest1() {
+  Rect a = { 4.5, 1.0, 5.0, 2.5, PI / 180.0 * -36.869897645844021296855612559093 };
+  Rect b = { 3.0, 11.0, sqrtf(200.0) / 2.0f, sqrtf(32.0) / 2.0f, -TAU / 8.0f };
+  bool ret = !intersects(a, b);
+  assert(ret);
+  bz_debugMessagef(0, "IntersectionTest1 %s", ret ? "passed" : "failed");
+  return ret;
+}
+
+bool intersectionTest2() {
+  Rect a = { 0.0, 0.0, 1.0, 2.0, 0.0 };
+  Rect b = { 1.5, 1.5, sqrtf(2.0), sqrtf(2.0) / 2.0f, -TAU / 8.0f };
+  bool ret = intersects(a, b);
+  assert(ret);
+  bz_debugMessagef(0, "IntersectionTest2 %s", ret ? "passed" : "failed");
+  return ret;
+}
+
+static Rect base = {0.0, 0.0, 35.0, 35.0, TAU / 8.0};
 
 #define MaxNumPlayers 256
 // Slightly higher than the time for jumping and hitting the roof and falling quickly
@@ -93,6 +126,13 @@ bool intersects(Rect a, Rect b) {
 #define TYP_PYR_HEIGHT (BASE_HEIGHT - TYP_JUMP_HEIGHT)
 #define MAX_PYR_HEIGHT (BASE_HEIGHT - MIN_JUMP_HEIGHT)
 
+#define TANK_HALFWIDTH 1.4
+#define TANK_HALFLENGTH 3.0
+#define TANK_HEIGHT 2.05
+#define TANK_ANG_VEL (PI / 4.0)
+
+#define TANK_EFFECTIVE_RADIUS_SQR (SQR(TANK_HALFWIDTH) + SQR(TANK_HALFLENGTH))
+
 class pyrJumpHelper : public bz_Plugin, public bz_CustomSlashCommandHandler
 {
 public:
@@ -107,6 +147,7 @@ public:
 private:
   float lastPollTime; // don't poll too often
   float lastHintTime[MaxNumPlayers];
+  // FIXME: Record last hint so as not to tell the player twice that they're too low.
   
   void GiveHint(bz_BasePlayerRecord *b);
   void pollPlayerHint();
@@ -129,6 +170,8 @@ void pyrJumpHelper::Init ( const char* /*commandLine*/ )
   
   for (int i = 0; i < MaxNumPlayers; i++)
     lastHintTime[i] = 0.0f;
+  intersectionTest1();
+  intersectionTest2();
 }
 
 void pyrJumpHelper::Cleanup() {
@@ -162,15 +205,76 @@ bool isPlayerGroundedOnPyrNeedingHint(bz_BasePlayerRecord *b) {
 // E.g. if #1 not satisfied then ONLY tell them this even if their position is also bad.
 void pyrJumpHelper::GiveHint(bz_BasePlayerRecord *b) {
   bz_PlayerUpdateState &s = b->lastKnownState;
-  string fpsHint;
+  // Too much work to simulate for several FPSes.
+  // Only use the infinite FPS calculation.
   if (s.pos[2] < MIN_PYR_HEIGHT) {
     bz_sendTextMessage(BZ_SERVER, b->playerID, "Too low to make the climb");
+    lastHintTime[b->playerID] = bz_getCurrentTime();
+    return;
   }
   else if (s.pos[2] < TYP_PYR_HEIGHT) {
-    fpsHint = "Need 30-50 FPS.";
+    bz_sendTextMessage(BZ_SERVER, b->playerID, "Need ~30 FPS to jump high enough");
+    lastHintTime[b->playerID] = bz_getCurrentTime();
+    return;
   }
   else if (s.pos[2] < MAX_PYR_HEIGHT) {
-    fpsHint = "Need ~50 FPS.";
+    bz_sendTextMessage(BZ_SERVER, b->playerID, "Need ~50 FPS to jump high enough");
+    lastHintTime[b->playerID] = bz_getCurrentTime();
+    return;
+  }
+  
+  // Tell them "Too far from platform" if they are 1) not within the base by a radius 2) their distance from the four parametric finite lines of the base
+  // This is a bit difficult and maybe shouldn't bother.
+  
+  Rect tank = { s.pos[0], s.pos[1], TANK_HALFWIDTH, TANK_HALFLENGTH, s.rotation };
+  
+  //const int divisions = 41;
+  const int divisions = 11;
+  vector<bool> success(divisions, true);
+  if (divisions & 1)
+    success[divisions / 2] = false;
+  for (int i = 0; i < divisions; i++) {
+    if ((divisions & 1) && (i == divisions / 2)) continue;
+    
+    float ratio = -1.0f + 2.0f * i / (divisions - 1);
+    float lower = BASE_HEIGHT - 4.0f - TANK_HEIGHT - s.pos[2];
+    float upper = BASE_HEIGHT - s.pos[2];
+    
+    // Solve s = u.t + a.t^2 / 2
+    float a = -0.5f * GRAVITY;
+    float b = JUMP_VEL;
+    // Must not collide between t1 and t2
+    float t1 = (-b + sqrtf(b * b + 4 * a * lower)) / 2 / a;
+    float t2 = (-b + sqrtf(b * b + 4 * a * upper)) / 2 / a;
+    assert(!isnan(t1));
+    assert(!isnan(t2));
+    float t = t1;
+    const float dt = 0.01f;
+    assert(t1 <= t2);
+    bz_sendTextMessagef(BZ_SERVER, BZ_ALLUSERS, "Div %d", i);
+    do {
+      Rect pos = tank;
+      pos.rot += (TANK_ANG_VEL * ratio * t);
+      //bz_sendTextMessagef(BZ_SERVER, BZ_ALLUSERS, "Rot %.2f t %.2f", pos.rot, t);
+      if (intersects(pos, base)) {
+        success[i] = false;
+        bz_sendTextMessagef(BZ_SERVER, BZ_ALLUSERS, "%d intersects", i);
+        break;
+      }
+      
+      t = min(t + dt, t2);
+    } while (t < t2);
+    
+    if (!success[i]) continue;
+    
+    // Must collide at t3
+    float t3 = (-b - sqrtf(b * b + 4 * a * upper)) / 2 / a;
+    assert(!isnan(t3));
+    Rect pos = tank;
+    pos.rot += (TANK_ANG_VEL * ratio * t3);
+    success[i] = intersects(pos, base);
+    if (success[i])
+      bz_sendTextMessagef(BZ_SERVER, BZ_ALLUSERS, "Success at div %d", i);
   }
   lastHintTime[b->playerID] = bz_getCurrentTime();
 }
