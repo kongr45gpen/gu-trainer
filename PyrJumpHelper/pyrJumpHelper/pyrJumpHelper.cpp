@@ -9,6 +9,8 @@ using namespace std;
 
 #define assert(x) { if (!x) bz_sendTextMessagef(BZ_SERVER, BZ_ALLUSERS, "Failed assertion: %s", #x); }
 
+#define EPS (1e-6)
+
 struct Rect {
   float x; // center x
   float y; // center y
@@ -66,6 +68,14 @@ bool intersects(Rect a, Rect b) {
   return intersectsHelper(a, b) && intersectsHelper(b, a);
 }
 
+#define MaxNumPlayers 256
+// Slightly higher than the time for jumping and hitting the roof and falling quickly
+#define ADVICE_PERIOD 2.5f
+
+// Above and below this they probably know very well that they won't make the jump so don't pester them
+#define PYR_HEIGHT_LOWEST 10
+#define PYR_HEIGHT_HIGHEST 22
+
 class pyrJumpHelper : public bz_Plugin, public bz_CustomSlashCommandHandler
 {
 public:
@@ -76,6 +86,12 @@ public:
   void Event ( bz_EventData *data);
   
   bool SlashCommand (int playerID, bz_ApiString command, bz_ApiString message, bz_APIStringList *params);
+  
+private:
+  float lastPollTime; // don't poll too often
+  float lastHintTime[MaxNumPlayers];
+  
+  void pollPlayerHint();
 };
 
 BZ_PLUGIN(pyrJumpHelper)
@@ -91,6 +107,9 @@ void pyrJumpHelper::Init ( const char* /*commandLine*/ )
   Register(bz_ePlayerSpawnEvent);
   Register(bz_eGetPlayerSpawnPosEvent);
   bz_registerCustomSlashCommand("test", this);
+  
+  for (int i = 0; i < MaxNumPlayers; i++)
+    lastHintTime[i] = 0.0f;
 }
 
 void pyrJumpHelper::Cleanup() {
@@ -106,16 +125,58 @@ bool isPlayerGrounded(int id) {
   return ret;
 }
 
+bool isPlayerGroundedOnPyrNeedingHint(bz_BasePlayerRecord *b) {
+  bz_PlayerUpdateState &s = b->lastKnownState;
+  if (!b->spawned || bz_isPlayerPaused(b->playerID) || s.falling) return false;
+  if (s.pos[2] < PYR_HEIGHT_LOWEST || s.pos[2] > PYR_HEIGHT_HIGHEST) return false;
+  // Luckily there is no other way a tank can be grounded and not be on a pyramid.
+  return true;
+}
+
+void GiveHint(bz_BasePlayerRecord *b) {
+}
+
+// Poll each player to determine whether they need advice
+void pyrJumpHelper::pollPlayerHint() {
+  float t = bz_getCurrentTime();
+  bz_APIIntList *l = bz_getPlayerIndexList();
+  for (int i = 0; i < l->size(); i++) {
+    int id = l->get(i);
+    if (t - lastHintTime[id] < ADVICE_PERIOD) // Don't spam them with advice
+      continue;
+    
+    bz_BasePlayerRecord *b = bz_getPlayerByIndex(id);
+    assert(b);
+    if (isPlayerGroundedOnPyrNeedingHint) {
+      GiveHint(b);
+    }
+    bz_freePlayerRecord(b);
+  }
+  delete l;
+}
+
 void pyrJumpHelper::Event(bz_EventData *data) {
-  if (data->eventType == bz_eTickEvent) {
-    // Poll each player and if they are on a pyramid and they haven't been notified within 2.5 seconds then give them a hint
+  if (data->eventType == bz_ePlayerUpdateEvent) {
+    // If they touch ground, can give them a new hint earlier than the normal period
+    auto d = static_cast<bz_PlayerUpdateEventData_V1 *>(data);
+    if (d->state.pos[2] < EPS)
+      lastHintTime[d->playerID] -= ADVICE_PERIOD;
+  }
+
+  float t = bz_getCurrentTime();
+  if (t - lastPollTime > MaxWaitTime) {
+    lastPollTime = t;
+    pollPlayerHint();
   }
 }
 
 bool pyrJumpHelper::SlashCommand (int playerID, bz_ApiString command, bz_ApiString message, bz_APIStringList *params) {
   command.tolower();
   if (command == "test") {
-    bz_sendTextMessagef(BZ_SERVER, playerID, "Your state is %d", isPlayerGrounded(playerID));
+    bz_BasePlayerRecord *b = bz_getPlayerByIndex(playerID);
+    assert(b);
+    bz_sendTextMessagef(BZ_SERVER, playerID, "Your state is %d", isPlayerGroundedOnPyrNeedingHint(b));
+    bz_freePlayerRecord(b);
     return true;
   }
   return false;
