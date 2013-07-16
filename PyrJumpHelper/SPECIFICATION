@@ -39,8 +39,11 @@ The jumps that we could teach:
 
 Progress:
 . Got the basic map
+  Detected when a player is on a pyramid
 
 To be decided:
 - When the jumper potentially needs a hint for how fast to turn while jumping, how do you let him know without spamming?
   -> Tentative: Detect whether he is on the pyramid and send him a message at most every period (e.g. 2 seconds). If they fell under height 12 then maybe stop telling them that they're too low until they make a fresh start.
   -> Alternatives: Define a command, but could be disruptive to try and type it.
+- How to convey basics like read the tank height meter, you can slide down but if you're too low you have to restart, the use of FPS config
+- How to silence the plugin from sending you message, or telling it which jump you're doing? e.g. shot jump
