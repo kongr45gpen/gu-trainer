@@ -75,6 +75,21 @@ bool intersects(Rect a, Rect b) {
 // Above and below this they probably know very well that they won't make the jump so don't pester them
 #define PYR_HEIGHT_LOWEST 10
 #define PYR_HEIGHT_HIGHEST 22
+#define BASE_HEIGHT 30
+
+#define GRAVITY 9.8
+#define JUMP_VEL 19.0
+#define MIN_JUMP_HEIGHT (JUMP_VEL * JUMP_VEL / 2.0 / GRAVITY)
+// Empirical: at 50 FPS
+#define TYP_JUMP_HEIGHT 18.608
+// Empirical: at 30 FPS - any lower is cheeky
+#define MAX_JUMP_HEIGHT 18.734
+// TODO: Add constants for tank shooting and somehow quantify the quality of the jump shooting in terms of safety and range?
+// Actually maybe best to leave this to the player completely...
+
+#define MIN_PYR_HEIGHT (BASE_HEIGHT - MAX_JUMP_HEIGHT)
+#define TYP_PYR_HEIGHT (BASE_HEIGHT - TYP_JUMP_HEIGHT)
+#define MAX_PYR_HEIGHT (BASE_HEIGHT - MIN_JUMP_HEIGHT)
 
 class pyrJumpHelper : public bz_Plugin, public bz_CustomSlashCommandHandler
 {
@@ -125,6 +140,8 @@ bool isPlayerGrounded(int id) {
   return ret;
 }
 
+// They need a hint if they are anywhere reasonably placed on the pyramid.
+// This includes needing to tell them that their jump will inevitably fail because they're too far from the base, etc.
 bool isPlayerGroundedOnPyrNeedingHint(bz_BasePlayerRecord *b) {
   bz_PlayerUpdateState &s = b->lastKnownState;
   if (!b->spawned || bz_isPlayerPaused(b->playerID) || s.falling) return false;
@@ -133,7 +150,13 @@ bool isPlayerGroundedOnPyrNeedingHint(bz_BasePlayerRecord *b) {
   return true;
 }
 
+// Consider the necessary conditions sequentially and independently.
+// 1. Suitable height.
+// 2. Suitable position.
+// 3. Suitable turn speed.
+// E.g. if #1 not satisfied then ONLY tell them this even if their position is also bad.
 void GiveHint(bz_BasePlayerRecord *b) {
+  bz_PlayerUpdateState &s = b->lastKnownState;
 }
 
 // Poll each player to determine whether they need advice
@@ -176,6 +199,13 @@ bool pyrJumpHelper::SlashCommand (int playerID, bz_ApiString command, bz_ApiStri
     bz_BasePlayerRecord *b = bz_getPlayerByIndex(playerID);
     assert(b);
     bz_sendTextMessagef(BZ_SERVER, playerID, "Your state is %d", isPlayerGroundedOnPyrNeedingHint(b));
+    bz_freePlayerRecord(b);
+    return true;
+  }
+  else if (command == "height") {
+    bz_BasePlayerRecord *b = bz_getPlayerByIndex(playerID);
+    assert(b);
+    bz_sendTextMessagef(BZ_SERVER, playerID, "%.2f", b->lastKnownState.pos[2]);
     bz_freePlayerRecord(b);
     return true;
   }
