@@ -59,3 +59,4 @@ To be decided:
 
 Discussion:
 - I (achoopic) can't be bothered doing the work for when the tank is too far from base or under it. They are detected as impossible jumps but not distinguished further. If anyone wants to implement this they are welcome to; it is not hard it is just not useful enough that I want to implement it.
+ - If I (alezakos) am bored enough, I might try to put some work on that.
