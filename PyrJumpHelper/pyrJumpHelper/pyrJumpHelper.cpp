@@ -8,14 +8,33 @@
 #include <string>
 using namespace std;
 
-#define assert(x) { if (!(x)) { \
-                      bz_sendTextMessagef(BZ_SERVER, BZ_ALLUSERS, "Failed assertion line %d: %s", __LINE__, #x); \
-                      bz_debugMessagef(0, "Failed assertion line %d: %s", __LINE__, #x); \
-                    } \
-                  }
+#define assert(x) { \
+ if (!(x)) { \
+   bz_sendTextMessagef(BZ_SERVER, BZ_ALLUSERS, "Failed assertion line %d: %s", __LINE__, #x); \
+   bz_debugMessagef(0, "Failed assertion line %d: %s", __LINE__, #x); \
+ } \
+}
+
+#define logMsg(playerID, format) { \
+  bz_sendTextMessage(BZ_SERVER, playerID, format); \
+  bz_debugMessage(3, format); \
+}
+                  
+#define logMsgf(playerID, format, ...) { \
+  bz_sendTextMessagef(BZ_SERVER, playerID, format, __VA_ARGS__); \
+  bz_debugMessagef(3, format, __VA_ARGS__); \
+}
+
+#define logf(format, ...) { \
+  bz_sendTextMessagef(BZ_SERVER, BZ_ALLUSERS, format, __VA_ARGS__); \
+  bz_debugMessagef(3, format, __VA_ARGS__); \
+}
+                  
 #define SQR(x) ((x) * (x))
 
 #define EPS (1e-6)
+#define LARGE_EPS (1e-3)
+
 #define PI acos(-1.0)
 #define TAU (2.0 * PI)
 
@@ -166,7 +185,7 @@ void pyrJumpHelper::Init ( const char* /*commandLine*/ )
   Register(bz_ePlayerSpawnEvent);
   Register(bz_eGetPlayerSpawnPosEvent);
   bz_registerCustomSlashCommand("test", this);
-  bz_registerCustomSlashCommand("height", this);
+  bz_registerCustomSlashCommand("state", this);
   
   for (int i = 0; i < MaxNumPlayers; i++)
     lastHintTime[i] = 0.0f;
@@ -176,7 +195,7 @@ void pyrJumpHelper::Init ( const char* /*commandLine*/ )
 
 void pyrJumpHelper::Cleanup() {
   bz_removeCustomSlashCommand("test");
-  bz_removeCustomSlashCommand("height");
+  bz_removeCustomSlashCommand("state");
   Flush();
 }
 
@@ -226,39 +245,51 @@ void pyrJumpHelper::GiveHint(bz_BasePlayerRecord *b) {
   // Tell them "Too far from platform" if they are 1) not within the base by a radius 2) their distance from the four parametric finite lines of the base
   // This is a bit difficult and maybe shouldn't bother.
   
-  Rect tank = { s.pos[0], s.pos[1], TANK_HALFWIDTH, TANK_HALFLENGTH, s.rotation };
+  // Some troll decided length is along x-axis at zero rotation
+  Rect tank = { s.pos[0], s.pos[1], TANK_HALFLENGTH, TANK_HALFWIDTH, s.rotation };
+  //logf("tankpos %.2f, %.2f, %.2f hw %.2f hh %.2f rot %.2f", tank.x, tank.y, s.pos[2], tank.hw, tank.hh, tank.rot); 
+
+  float lower = BASE_HEIGHT - 4.0f - TANK_HEIGHT - s.pos[2];
+  float upper = BASE_HEIGHT - s.pos[2];
   
-  //const int divisions = 41;
-  const int divisions = 11;
-  vector<bool> success(divisions, true);
-  if (divisions & 1)
-    success[divisions / 2] = false;
+  // Solve s = u.t + a.t^2 / 2
+  float A = -0.5f * GRAVITY;
+  float B = JUMP_VEL;
+  // Must not collide between t1 and t2
+  float t1 = (-B + sqrtf(B*B + 4*A*lower)) / 2/A;
+  float t2 = (-B + sqrtf(B*B + 4*A*upper)) / 2/A;
+  //logf("t1 %.2f t2 %.2f", t1, t2);
+  assert(!isnan(t1));
+  assert(!isnan(t2));
+  assert(t1 <= t2);  
+  
+  // Must collide at t3
+  float t3 = (-B - sqrtf(B*B + 4*A*upper)) / 2/A;
+  assert(!isnan(t3));  
+
+  const float dt = 0.01f;
+
+  const int divisions = 201;
+  assert(divisions & 1); // Need this for the 0 speed value as delimiter!
+  vector<bool> success(divisions + 1, true);
+  success[divisions] = false;
+  success[divisions / 2] = false;
   for (int i = 0; i < divisions; i++) {
-    if ((divisions & 1) && (i == divisions / 2)) continue;
+    if (i == divisions / 2) continue;
     
-    float ratio = -1.0f + 2.0f * i / (divisions - 1);
-    float lower = BASE_HEIGHT - 4.0f - TANK_HEIGHT - s.pos[2];
-    float upper = BASE_HEIGHT - s.pos[2];
-    
-    // Solve s = u.t + a.t^2 / 2
-    float a = -0.5f * GRAVITY;
-    float b = JUMP_VEL;
-    // Must not collide between t1 and t2
-    float t1 = (-b + sqrtf(b * b + 4 * a * lower)) / 2 / a;
-    float t2 = (-b + sqrtf(b * b + 4 * a * upper)) / 2 / a;
-    assert(!isnan(t1));
-    assert(!isnan(t2));
+    // Start from anti-clockwise because people tend to associate negative with anti-clockwise.
+    float ratio = -(-1.0f + 2.0f * i / (divisions - 1));
+
     float t = t1;
-    const float dt = 0.01f;
-    assert(t1 <= t2);
-    bz_sendTextMessagef(BZ_SERVER, BZ_ALLUSERS, "Div %d", i);
+    //logf("Div %d, t1 %.2f t2 %.2f", i, t1, t2);
     do {
       Rect pos = tank;
       pos.rot += (TANK_ANG_VEL * ratio * t);
+      //bz_debugMessagef(0, "Rot %.2f t %.2f", pos.rot, t);
       //bz_sendTextMessagef(BZ_SERVER, BZ_ALLUSERS, "Rot %.2f t %.2f", pos.rot, t);
       if (intersects(pos, base)) {
         success[i] = false;
-        bz_sendTextMessagef(BZ_SERVER, BZ_ALLUSERS, "%d intersects", i);
+        //logf("%d intersects", i);
         break;
       }
       
@@ -268,13 +299,61 @@ void pyrJumpHelper::GiveHint(bz_BasePlayerRecord *b) {
     if (!success[i]) continue;
     
     // Must collide at t3
-    float t3 = (-b - sqrtf(b * b + 4 * a * upper)) / 2 / a;
-    assert(!isnan(t3));
     Rect pos = tank;
     pos.rot += (TANK_ANG_VEL * ratio * t3);
     success[i] = intersects(pos, base);
-    if (success[i])
-      bz_sendTextMessagef(BZ_SERVER, BZ_ALLUSERS, "Success at div %d", i);
+    //if (success[i])
+      //logf("Success at turn speed %.0f %%", -100.0f * ratio);
+  }
+  bool on = false;
+  int end;
+  char buf[20];
+  string left;
+  for (int i = 0; i <= divisions / 2; i++) {
+    if (!on && success[i]) {
+      on = true;
+      end = -100 + 200 * i / (divisions - 1);
+    }
+    else if (on && !success[i]) {
+      on = false;
+      sprintf(buf, "%d-%d", -(-100 + 200 * (i - 1) / (divisions - 1)), -end); // Make positive values
+      if (!left.empty())
+        left = "," + left;
+      left = buf + left;
+    }
+  }
+  int start;
+  string right;
+  assert(!on);
+  for (int i = divisions / 2 + 1; i <= divisions; i++) {
+    if (!on && success[i]) {
+      on = true;
+      start = -100 + 200 * i / (divisions - 1);
+    }
+    else if (on && !success[i]) {
+      on = false;
+      sprintf(buf, "%d-%d", start, -100 + 200 * (i - 1) / (divisions - 1));
+      if (!right.empty())
+        right += ",";
+      right += buf;
+    }
+  }
+
+  if (left.empty() && right.empty()) {
+    logMsg(b->playerID, "Can't climb from here");
+  }
+  else {
+    string msg = "% turn speed to climb up: ";
+    if (!left.empty()) {
+      msg += "Left: ";
+      msg += left;
+      msg += " ";
+    }
+    if (!right.empty()) {
+      msg += "Right: ";
+      msg += right;
+    }
+    logMsg(b->playerID, msg.c_str());
   }
   lastHintTime[b->playerID] = bz_getCurrentTime();
 }
@@ -285,6 +364,8 @@ void pyrJumpHelper::pollPlayerHint() {
   bz_APIIntList *l = bz_getPlayerIndexList();
   for (int i = 0; i < l->size(); i++) {
     int id = l->get(i);
+
+    // FIXME: If they adjust their position from too high to OK, should tell them
     if (t - lastHintTime[id] < ADVICE_PERIOD) // Don't spam them with advice
       continue;
     
@@ -318,14 +399,14 @@ bool pyrJumpHelper::SlashCommand (int playerID, bz_ApiString command, bz_ApiStri
   if (command == "test") {
     bz_BasePlayerRecord *b = bz_getPlayerByIndex(playerID);
     assert(b);
-    bz_sendTextMessagef(BZ_SERVER, playerID, "Your state is %d", isPlayerGroundedOnPyrNeedingHint(b));
+    logf("Needing hint: %s", isPlayerGroundedOnPyrNeedingHint(b) ? "True" : "False");
     bz_freePlayerRecord(b);
     return true;
   }
-  else if (command == "height") {
+  else if (command == "state") {
     bz_BasePlayerRecord *b = bz_getPlayerByIndex(playerID);
     assert(b);
-    bz_sendTextMessagef(BZ_SERVER, playerID, "%.2f", b->lastKnownState.pos[2]);
+    bz_sendTextMessagef(BZ_SERVER, playerID, "z %.2f r %.2f", b->lastKnownState.pos[2], b->lastKnownState.rotation);
     bz_freePlayerRecord(b);
     return true;
   }
