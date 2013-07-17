@@ -232,15 +232,15 @@ void pyrJumpHelper::GiveHint(bz_BasePlayerRecord *b) {
     return;
   }
   else if (s.pos[2] < TYP_PYR_HEIGHT) {
-    bz_sendTextMessage(BZ_SERVER, b->playerID, "Need ~30 FPS to jump high enough");
-    lastHintTime[b->playerID] = bz_getCurrentTime();
-    return;
+    logMsg(b->playerID, "You need a low framerate to jump high enough");
   }
   else if (s.pos[2] < MAX_PYR_HEIGHT) {
-    bz_sendTextMessage(BZ_SERVER, b->playerID, "Need ~50 FPS to jump high enough");
-    lastHintTime[b->playerID] = bz_getCurrentTime();
-    return;
+    logMsg(b->playerID, "You need a low-ish framerate to jump high enough");
   }
+  // Instead of doing nasty calculations specific to the required FPS, just approximate the required turn speeds by pretending that they're high enough.
+  // The turn speed margins will either be too small to be detected (practically impossible jump) or small enough to dissuade them anyway!
+  if (s.pos[2] < MAX_PYR_HEIGHT + LARGE_EPS)
+    s.pos[2] = MAX_PYR_HEIGHT + LARGE_EPS;
   
   // Tell them "Too far from platform" if they are 1) not within the base by a radius 2) their distance from the four parametric finite lines of the base
   // This is a bit difficult and maybe shouldn't bother.
@@ -302,8 +302,6 @@ void pyrJumpHelper::GiveHint(bz_BasePlayerRecord *b) {
     Rect pos = tank;
     pos.rot += (TANK_ANG_VEL * ratio * t3);
     success[i] = intersects(pos, base);
-    //if (success[i])
-      //logf("Success at turn speed %.0f %%", -100.0f * ratio);
   }
   bool on = false;
   int end;
@@ -353,6 +351,7 @@ void pyrJumpHelper::GiveHint(bz_BasePlayerRecord *b) {
       msg += "Right: ";
       msg += right;
     }
+    // FIXME: Never send the exact same "% turn speed" message twice.
     logMsg(b->playerID, msg.c_str());
   }
   lastHintTime[b->playerID] = bz_getCurrentTime();
