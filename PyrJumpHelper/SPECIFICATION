@@ -4,6 +4,10 @@ Produce a map with a plugin that teaches first-timers how to jump up the pyramid
 2. Adjust height or position if necessary
 3. Jump with a particular turn speed
 
+Estimated completion time:
+ETA 16 October 2013
+If you object you speak up.
+
 Scope:
 Aim small as we have no releases and what we need is feedback from the community not large unrealistic plans are better written as a tutorial document (rather than map).
 There will be no bots.
@@ -39,7 +43,8 @@ The jumps that we could teach:
 
 Progress:
 . Got the basic map
-  Detected when a player is on a pyramid
+. Detected when a player is on a pyramid
+. Detected which turn speeds will succeed for the 2nd jump
 
 To be decided:
 - When the jumper potentially needs a hint for how fast to turn while jumping, how do you let him know without spamming?
@@ -50,3 +55,6 @@ To be decided:
 - How to tell player whether they should adjust position on the pyr (which could involve jumping if its completely wrong) or to restart?
 - It's too difficult / too much work to detect whether the player is on the inside of the base. It's also quite obvious if you're too far. For now just say you can't make the jump there... if they can't figure that out then...
 - New idea: Mark a template for where to get a run up and jump/turn full speed.
+
+Discussion:
+- I (achoopic) can't be bothered doing the work for when the tank is too far from base or under it. They are detected as impossible jumps but not distinguished further. If anyone wants to implement this they are welcome to; it is not hard it is just not useful enough that I want to implement it.
