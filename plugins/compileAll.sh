@@ -14,6 +14,8 @@ bold=`tput bold`
 normal=`tput sgr0`
 green=`tput setf 2`
 
+cd $MYDIR
+
 echo $bold"Compiling "$green"pyrJumpHelper"$normal$bold"..."
 echo $normal
 ./compilePlugin.sh ../PyrJumpHelper/pyrJumpHelper $BZDIR
