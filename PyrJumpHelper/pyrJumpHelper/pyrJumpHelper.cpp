@@ -267,9 +267,9 @@ void pyrJumpHelper::GiveHint(bz_BasePlayerRecord *b) {
   float t3 = (-B - sqrtf(B*B + 4*A*upper)) / 2/A;
   assert(!isnan(t3));  
 
-  const float dt = 0.01f;
+  const float dt = 0.02f;
 
-  const int divisions = 201;
+  const int divisions = 101;
   assert(divisions & 1); // Need this for the 0 speed value as delimiter!
   vector<bool> success(divisions + 1, true);
   success[divisions] = false;
@@ -304,7 +304,7 @@ void pyrJumpHelper::GiveHint(bz_BasePlayerRecord *b) {
     success[i] = intersects(pos, base);
   }
   bool on = false;
-  int end;
+  int start, end;
   char buf[20];
   string left;
   for (int i = 0; i <= divisions / 2; i++) {
@@ -314,13 +314,16 @@ void pyrJumpHelper::GiveHint(bz_BasePlayerRecord *b) {
     }
     else if (on && !success[i]) {
       on = false;
-      sprintf(buf, "%d-%d", -(-100 + 200 * (i - 1) / (divisions - 1)), -end); // Make positive values
+      start = -100 + 200 * (i - 1) / (divisions - 1);
+      if (start != end)
+        sprintf(buf, "%d-%d", -start, -end); // Make positive values
+      else
+        sprintf(buf, "%d", -start);
       if (!left.empty())
         left = "," + left;
       left = buf + left;
     }
   }
-  int start;
   string right;
   assert(!on);
   for (int i = divisions / 2 + 1; i <= divisions; i++) {
@@ -330,7 +333,11 @@ void pyrJumpHelper::GiveHint(bz_BasePlayerRecord *b) {
     }
     else if (on && !success[i]) {
       on = false;
-      sprintf(buf, "%d-%d", start, -100 + 200 * (i - 1) / (divisions - 1));
+      end = -100 + 200 * (i - 1) / (divisions - 1));
+      if (start != end)
+        sprintf(buf, "%d-%d", start, end);
+      else
+        sprintf(buf, "%d", start);
       if (!right.empty())
         right += ",";
       right += buf;
