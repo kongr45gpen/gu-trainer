@@ -7,7 +7,9 @@ if [ "$#" != "1" ] || [ ! -d $BZDIR ] ; then
 	echo "Usage: $0 /full/path/to/src/bzflag"
 else
 	cd $BZDIR/plugins
-	./newplug.sh pyrJumpHelper
+	if [ ! -d pyrJumpHelper ] ; then
+		./newplug.sh pyrJumpHelper
+	fi
 	#rm pyrJumpHelper
 	#ln -s $MYDIR/pyrJumpHelper
 	rm pyrJumpHelper/pyrJumpHelper.cpp
