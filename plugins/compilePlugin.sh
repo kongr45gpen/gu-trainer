@@ -29,7 +29,9 @@ done
 
 make
 cd $MYDIR
-ln -s $BZDIR/plugins/$NAME/.libs/$NAME.so
+ln -fs $BZDIR/plugins/$NAME/.libs/$NAME.so
+
+echo
 
 #to undo:
 #remove "plugins/pyrJumpHelper/Makefile" from $BZDIR/configure.ac
