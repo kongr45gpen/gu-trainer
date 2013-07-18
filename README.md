@@ -1,6 +1,6 @@
 Poll: Switch to a new license. Please fill this out wxyz
 ==============
-Attribution-ShareAlike 2.5 Generic. In favor: achoopic, alezakos, Snake, khonk, wxyzWXYZ
+Attribution-ShareAlike 2.5 Generic. In favor: achoopic, khonk, wxyzWXYZ
 
 Attribution-Unported 3.0. In favor: achoopic, alezakos, Snake, khonk, wxyzWXYZ
 
