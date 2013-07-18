@@ -1,0 +1,3 @@
+[submodule "plugins/mapChange"]
+	path = plugins/mapChange
+	url = https://github.com/kongr45gpen/mapChange
