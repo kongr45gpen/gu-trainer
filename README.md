@@ -1,12 +1,6 @@
-Poll: Switch to a new license. Please fill this out wxyz
-==============
-Attribution-ShareAlike 2.5 Generic. In favor: achoopic, alezakos, Snake, khonk, wxyzWXYZ
-
-Attribution-Unported 3.0. In favor: achoopic, alezakos, Snake, khonk, wxyzWXYZ
-
 GU Trainer Map
 ==============
-GU Trainer Map is a map made by the Reptiles Organisation (R.O.), aiming to train new players to be able to play efficiently on games of the league.
+GU Trainer is a map made by the Reptiles Organisation (R.O.), aiming to train new players to be able to play efficiently on games of the league.
 
 Q & A (for visitors)
 --------------------
@@ -38,7 +32,7 @@ A : Snake12534 (Co-Founder), alezakos, khonkhortisan, Pac-Man. These are their b
 
 License
 -------
-The map is licensed under [Creative Commons Attribution Non-Commercial Share-Alike](http://creativecommons.org/licenses/by-nc-sa/3.0/).
+The map is licensed under [Creative Commons Attribution 3.0 Unported](http://creativecommons.org/licenses/by/3.0/).
 
 How to use
 ----------
