@@ -119,11 +119,33 @@ bool intersectionTest2() {
   return ret;
 }
 
-static Rect base = {0.0, 0.0, 35.0, 35.0, TAU / 8.0};
+static const Rect base = {0.0, 0.0, 35.0, 35.0, TAU / 8.0};
+
+float distanceFromBase(float x, float y) {
+  assert(abs(base.hw - base.hh) < LARGE_EPS);
+  x -= base.x;
+  y -= base.y;
+  float x_ = x * cosf(-base.rot) - y * sinf(-base.rot);
+  float y_ = x * sinf(-base.rot) + y * cosf(-base.rot);
+  
+  // Exploit symmetry using abs() in every case.
+  
+  if (abs(x_) <= base.hw && abs(y_) <= base.hh)
+    return 0.0f; // Inside base
+  
+  if (abs(x_) <= base.hw)
+    return abs(y_) - base.hh;
+  if (abs(y_) <= base.hh)
+    return abs(x_) - base.hw;
+  
+  return sqrtf(SQR(abs(x_) - base.hw) + SQR(abs(y_) - base.hh));
+}
 
 #define MaxNumPlayers 256
 // Slightly higher than the time for jumping and hitting the roof and falling quickly
 #define ADVICE_PERIOD 2.5f
+// Have at least this delay between hints even when they are appropriate
+#define SHORT_ADVICE_DELAY 1.0f
 
 // Above and below this they probably know very well that they won't make the jump so don't pester them
 #define PYR_HEIGHT_LOWEST 5
@@ -151,6 +173,17 @@ static Rect base = {0.0, 0.0, 35.0, 35.0, TAU / 8.0};
 #define TANK_ANG_VEL (PI / 4.0)
 
 #define TANK_EFFECTIVE_RADIUS_SQR (SQR(TANK_HALFWIDTH) + SQR(TANK_HALFLENGTH))
+#define TANK_EFFECTIVE_RADIUS sqrt(TANK_EFFECTIVE_RADIUS_SQR)
+
+enum HintType {
+  eNoHint,
+  eTooLow,
+  eTooClose,
+  eTooFar,
+  eTooHard, // Too hard or need multiple jumps
+  eSingleJump,
+  eLowFpsRequired // A modifier state; combine this HintType with a SingleJump
+};
 
 class pyrJumpHelper : public bz_Plugin, public bz_CustomSlashCommandHandler
 {
@@ -166,9 +199,10 @@ public:
 private:
   float lastPollTime; // don't poll too often
   float lastHintTime[MaxNumPlayers];
-  // FIXME: Record last hint so as not to tell the player twice that they're too low.
+  float lastPos[MaxNumPlayers][3]; // Where the player was last, to determine if they moved.
+  HintType lastHint[MaxNumPlayers];
   
-  void GiveHint(bz_BasePlayerRecord *b);
+  void GiveHintIfNecessary(const bz_BasePlayerRecord *b);
   void pollPlayerHint();
 };
 
@@ -187,8 +221,11 @@ void pyrJumpHelper::Init ( const char* /*commandLine*/ )
   bz_registerCustomSlashCommand("test", this);
   bz_registerCustomSlashCommand("state", this);
   
-  for (int i = 0; i < MaxNumPlayers; i++)
+  for (int i = 0; i < MaxNumPlayers; i++) {
     lastHintTime[i] = 0.0f;
+    lastPos[i][2] = lastPos[i][1] = lastPos[i][0] = -1.0f;
+    lastHint[i] = eNoHint;
+  }
   intersectionTest1();
   intersectionTest2();
 }
@@ -207,28 +244,222 @@ bool isPlayerGrounded(int id) {
   return ret;
 }
 
-// They need a hint if they are anywhere reasonably placed on the pyramid.
+// They could use a hint if they are anywhere reasonably placed on the pyramid.
 // This includes needing to tell them that their jump will inevitably fail because they're too far from the base, etc.
-bool isPlayerGroundedOnPyrNeedingHint(bz_BasePlayerRecord *b) {
-  bz_PlayerUpdateState &s = b->lastKnownState;
+bool isPlayerHintable(const bz_BasePlayerRecord *b) {
+  const bz_PlayerUpdateState &s = b->lastKnownState;
   if (!b->spawned || bz_isPlayerPaused(b->playerID) || s.falling) return false;
   if (s.pos[2] < PYR_HEIGHT_LOWEST || s.pos[2] > PYR_HEIGHT_HIGHEST) return false;
   // Luckily there is no other way a tank can be grounded and not be on a pyramid.
   return true;
 }
 
+struct Hint {
+  HintType type;
+  string msg;
+};
+
+// Efficient hint calculations only
+Hint calculateCheapHint(const bz_BasePlayerRecord *b) {
+  Hint ret = {eNoHint, ""};
+  const bz_PlayerUpdateState &s = b->lastKnownState;
+  if (s.pos[2] < MIN_PYR_HEIGHT) {
+    return {eTooLow, "Too low to make the climb"};
+  }
+  int lowFpsRequired = 0;
+  if (s.pos[2] < TYP_PYR_HEIGHT) {
+    lowFpsRequired = 2;
+  }
+  else if (s.pos[2] < MAX_PYR_HEIGHT) {
+    lowFpsRequired = 1;
+  }
+  
+  float dist = distanceFromBase(s.pos[0], s.pos[1]);
+  if (dist < TANK_HALFWIDTH) {
+    return {eTooClose, "Move out from under the base"};
+  }
+  else if (dist > TANK_EFFECTIVE_RADIUS) {
+    return {eTooFar, "Move closer to the base"};
+  }
+  if (!lowFpsRequired)
+    return ret;
+  
+  return {eLowFpsRequired, lowFpsRequired == 1 ? "Low-ish FPS required. " : "Low FPS required" };
+}
+
+Hint calculateExpensiveHint(const bz_BasePlayerRecord *b, Hint hint) {
+  bz_PlayerUpdateState s = b->lastKnownState; // modifiable
+  
+  assert(hint.type == eLowFpsRequired || hint.type == eNoHint);
+  
+  // Instead of doing nasty calculations specific to the required FPS, just approximate the required turn speeds by pretending that they're high enough.
+  // The turn speed margins will either be too small to be detected (practically impossible jump) or small enough to dissuade them anyway!
+  if (s.pos[2] < MAX_PYR_HEIGHT + LARGE_EPS)
+    s.pos[2] = MAX_PYR_HEIGHT + LARGE_EPS;
+  
+    // Some troll bzflag developer decided tank length is along x-axis at zero rotation
+  Rect tank = { s.pos[0], s.pos[1], TANK_HALFLENGTH, TANK_HALFWIDTH, s.rotation };
+
+  float lower = BASE_HEIGHT - 4.0f - TANK_HEIGHT - s.pos[2];
+  float upper = BASE_HEIGHT - s.pos[2];
+  
+  // Solve s = u.t + a.t^2 / 2
+  float A = -0.5f * GRAVITY;
+  float B = JUMP_VEL;
+  // Must not collide between t1 and t2
+  float t1 = (-B + sqrtf(B*B + 4*A*lower)) / 2/A;
+  float t2 = (-B + sqrtf(B*B + 4*A*upper)) / 2/A;
+  assert(!isnan(t1));
+  assert(!isnan(t2));
+  assert(t1 <= t2);  
+  
+  // Must collide at t3
+  float t3 = (-B - sqrtf(B*B + 4*A*upper)) / 2/A;
+  assert(!isnan(t3));  
+
+  const float dt = 0.02f;
+
+  const int divisions = 101;
+  assert(divisions & 1); // Need this for the 0 speed value as delimiter!
+  vector<bool> success(divisions + 1, true);
+  success[divisions] = false;
+  success[divisions / 2] = false;
+  for (int i = 0; i < divisions; i++) {
+    if (i == divisions / 2) continue;
+    
+    // Start from anti-clockwise because people tend to associate negative with anti-clockwise.
+    float ratio = -(-1.0f + 2.0f * i / (divisions - 1));
+
+    float t = t1;
+    do {
+      Rect pos = tank;
+      pos.rot += (TANK_ANG_VEL * ratio * t);
+      if (intersects(pos, base)) {
+        success[i] = false;
+        break;
+      }
+      
+      t = min(t + dt, t2);
+    } while (t < t2);
+    
+    if (!success[i]) continue;
+    
+    // Must collide at t3
+    Rect pos = tank;
+    pos.rot += (TANK_ANG_VEL * ratio * t3);
+    success[i] = intersects(pos, base);
+  }
+  bool on = false;
+  int start, end;
+  char buf[20];
+  string left;
+  for (int i = 0; i <= divisions / 2; i++) {
+    if (!on && success[i]) {
+      on = true;
+      end = -100 + 200 * i / (divisions - 1);
+    }
+    else if (on && !success[i]) {
+      on = false;
+      start = -100 + 200 * (i - 1) / (divisions - 1);
+      if (start != end)
+        sprintf(buf, "%d-%d", -start, -end); // Make positive values
+      else
+        sprintf(buf, "%d", -start);
+      if (!left.empty())
+        left = "," + left;
+      left = buf + left;
+    }
+  }
+  string right;
+  assert(!on);
+  for (int i = divisions / 2 + 1; i <= divisions; i++) {
+    if (!on && success[i]) {
+      on = true;
+      start = -100 + 200 * i / (divisions - 1);
+    }
+    else if (on && !success[i]) {
+      on = false;
+      end = -100 + 200 * (i - 1) / (divisions - 1);
+      if (start != end)
+        sprintf(buf, "%d-%d", start, end);
+      else
+        sprintf(buf, "%d", start);
+      if (!right.empty())
+        right += ",";
+      right += buf;
+    }
+  }
+
+  if (left.empty() && right.empty()) {
+    return {eTooHard, "Multiple jumps required or too difficult"};
+  }
+  else {
+    string msg = "% turn speed to climb up: ";
+    if (!left.empty()) {
+      msg += "Left: ";
+      msg += left;
+      msg += " ";
+    }
+    if (!right.empty()) {
+      msg += "Right: ";
+      msg += right;
+    }
+
+    // Add the potential low FPS message
+    return {eSingleJump, hint.msg + msg.c_str()};
+  }
+  assert(0);
+}
+
+void pyrJumpHelper::GiveHintIfNecessary(const bz_BasePlayerRecord *b) {
+  const bz_PlayerUpdateState &s = b->lastKnownState;
+  
+  // Never give hints if they didn't move
+  if (SQR(s.pos[0] - lastPos[b->playerID][0]) + SQR(s.pos[1] - lastPos[b->playerID][1]) + SQR(s.pos[2] - lastPos[b->playerID][2]) < LARGE_EPS)
+    return;
+  
+  // Update the last position record
+  for (int i = 0; i < 3; i++)
+    lastPos[b->playerID][i] = s.pos[i];
+
+  // Never give hints too often, even if new
+  if (bz_getCurrentTime() - lastHintTime[b->playerID] < SHORT_ADVICE_DELAY)
+    return;
+    
+  Hint hint = calculateCheapHint(b);
+  
+  // Don't repeat the same hint too often
+  if (hint.type == lastHint[b->playerID] && bz_getCurrentTime() - lastHintTime[b->playerID] < ADVICE_PERIOD)
+    return;
+  
+  if (hint.type == eNoHint || hint.type == eLowFpsRequired) {
+    hint = calculateExpensiveHint(b, hint);
+  }
+  
+  assert(hint.type != eNoHint);
+  
+  logMsg(b->playerID, hint.msg.c_str());
+  lastHintTime[b->playerID] = bz_getCurrentTime();
+  lastHint[b->playerID] = hint.type;
+}
+
+#if 0
 // Consider the necessary conditions sequentially and independently.
 // 1. Suitable height.
 // 2. Suitable position.
 // 3. Suitable turn speed.
 // E.g. if #1 not satisfied then ONLY tell them this even if their position is also bad.
-void pyrJumpHelper::GiveHint(bz_BasePlayerRecord *b) {
+void pyrJumpHelper::GiveHintIfNecessary(bz_BasePlayerRecord *b) {
+  if (bz_getCurrentTime() - lastHintTime[b->playerID] < SHORT_ADVICE_DELAY)
+    return;
+
   bz_PlayerUpdateState &s = b->lastKnownState;
   // Too much work to simulate for several FPSes.
   // Only use the infinite FPS calculation.
   if (s.pos[2] < MIN_PYR_HEIGHT) {
-    bz_sendTextMessage(BZ_SERVER, b->playerID, "Too low to make the climb");
+    logMsg(b->playerID, "Too low to make the climb");
     lastHintTime[b->playerID] = bz_getCurrentTime();
+    lastHint[b->playerID] = eTooLow;
     return;
   }
   else if (s.pos[2] < TYP_PYR_HEIGHT) {
@@ -241,11 +472,23 @@ void pyrJumpHelper::GiveHint(bz_BasePlayerRecord *b) {
   // The turn speed margins will either be too small to be detected (practically impossible jump) or small enough to dissuade them anyway!
   if (s.pos[2] < MAX_PYR_HEIGHT + LARGE_EPS)
     s.pos[2] = MAX_PYR_HEIGHT + LARGE_EPS;
+    
+  // Now technically they can jump high enough to be over the base... but are they in a suitable position?
+  float dist = distanceFromBase(s.pos[0], s.pos[1]);
+  if (dist < TANK_HALFWIDTH) {
+    logMsg(b->playerID, "Move away from under the base");
+    lastHintTime[b->playerID] = bz_getCurrentTime();
+    lastHint[b->playerID] = eTooClose;
+    return;
+  }
+  else if (dist > TANK_EFFECTIVE_RADIUS) {
+    logMsg(b->playerID, "Too far from the base; move closer");
+    lastHintTime[b->playerID] = bz_getCurrentTime();
+    lastHint[b->playerID] = eTooFar;
+    return;
+  }
   
-  // Tell them "Too far from platform" if they are 1) not within the base by a radius 2) their distance from the four parametric finite lines of the base
-  // This is a bit difficult and maybe shouldn't bother.
-  
-  // Some troll decided length is along x-axis at zero rotation
+  // Some troll bzflag developer decided tank length is along x-axis at zero rotation
   Rect tank = { s.pos[0], s.pos[1], TANK_HALFLENGTH, TANK_HALFWIDTH, s.rotation };
   //logf("tankpos %.2f, %.2f, %.2f hw %.2f hh %.2f rot %.2f", tank.x, tank.y, s.pos[2], tank.hw, tank.hh, tank.rot); 
 
@@ -333,7 +576,7 @@ void pyrJumpHelper::GiveHint(bz_BasePlayerRecord *b) {
     }
     else if (on && !success[i]) {
       on = false;
-      end = -100 + 200 * (i - 1) / (divisions - 1));
+      end = -100 + 200 * (i - 1) / (divisions - 1);
       if (start != end)
         sprintf(buf, "%d-%d", start, end);
       else
@@ -345,7 +588,10 @@ void pyrJumpHelper::GiveHint(bz_BasePlayerRecord *b) {
   }
 
   if (left.empty() && right.empty()) {
-    logMsg(b->playerID, "Can't climb from here");
+    logMsg(b->playerID, "Multiple jumps required or too difficult");
+    lastHintTime[b->playerID] = bz_getCurrentTime();
+    lastHint[b->playerID] = eTooHard;
+    return;
   }
   else {
     string msg = "% turn speed to climb up: ";
@@ -360,9 +606,13 @@ void pyrJumpHelper::GiveHint(bz_BasePlayerRecord *b) {
     }
     // FIXME: Never send the exact same "% turn speed" message twice.
     logMsg(b->playerID, msg.c_str());
+    lastHintTime[b->playerID] = bz_getCurrentTime();
+    lastHint[b->playerID] = eSingleJump;
+    return;
   }
-  lastHintTime[b->playerID] = bz_getCurrentTime();
+  assert(0);
 }
+#endif
 
 // Poll each player to determine whether they need advice
 void pyrJumpHelper::pollPlayerHint() {
@@ -370,15 +620,11 @@ void pyrJumpHelper::pollPlayerHint() {
   bz_APIIntList *l = bz_getPlayerIndexList();
   for (int i = 0; i < l->size(); i++) {
     int id = l->get(i);
-
-    // FIXME: If they adjust their position from too high to OK, should tell them
-    if (t - lastHintTime[id] < ADVICE_PERIOD) // Don't spam them with advice
-      continue;
     
     bz_BasePlayerRecord *b = bz_getPlayerByIndex(id);
     assert(b);
-    if (isPlayerGroundedOnPyrNeedingHint(b)) {
-      GiveHint(b);
+    if (isPlayerHintable(b)) {
+      GiveHintIfNecessary(b);
     }
     bz_freePlayerRecord(b);
   }
@@ -387,7 +633,7 @@ void pyrJumpHelper::pollPlayerHint() {
 
 void pyrJumpHelper::Event(bz_EventData *data) {
   if (data->eventType == bz_ePlayerUpdateEvent) {
-    // If they touch ground, can give them a new hint earlier than the normal period
+    // If they touch ground, can give them the next hint freely
     auto d = static_cast<bz_PlayerUpdateEventData_V1 *>(data);
     if (d->state.pos[2] < EPS)
       lastHintTime[d->playerID] -= ADVICE_PERIOD;
@@ -405,7 +651,7 @@ bool pyrJumpHelper::SlashCommand (int playerID, bz_ApiString command, bz_ApiStri
   if (command == "test") {
     bz_BasePlayerRecord *b = bz_getPlayerByIndex(playerID);
     assert(b);
-    logf("Needing hint: %s", isPlayerGroundedOnPyrNeedingHint(b) ? "True" : "False");
+    logf("Needing hint: %s", isPlayerHintable(b) ? "True" : "False");
     bz_freePlayerRecord(b);
     return true;
   }
