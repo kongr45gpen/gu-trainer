@@ -96,7 +96,6 @@ bool intersectsHelper(Rect a, Rect b) {
   return true;
 }
 
-// FIXME: Untested
 bool intersects(Rect a, Rect b) {
   return intersectsHelper(a, b) && intersectsHelper(b, a);
 }
@@ -201,6 +200,10 @@ private:
   float lastHintTime[MaxNumPlayers];
   float lastPos[MaxNumPlayers][3]; // Where the player was last, to determine if they moved.
   HintType lastHint[MaxNumPlayers];
+
+  // Negative z if they don't want to spawn at the saved position (or there is no saved position)
+  // Fourth element is rotation
+  float savedPos[MaxNumPlayers][4];
   
   void GiveHintIfNecessary(const bz_BasePlayerRecord *b);
   void pollPlayerHint();
@@ -220,10 +223,14 @@ void pyrJumpHelper::Init ( const char* /*commandLine*/ )
   Register(bz_eGetPlayerSpawnPosEvent);
   bz_registerCustomSlashCommand("test", this);
   bz_registerCustomSlashCommand("state", this);
+  bz_registerCustomSlashCommand("save", this);
+  bz_registerCustomSlashCommand("clear", this);
+  bz_registerCustomSlashCommand("cmds", this);
   
   for (int i = 0; i < MaxNumPlayers; i++) {
     lastHintTime[i] = 0.0f;
     lastPos[i][2] = lastPos[i][1] = lastPos[i][0] = -1.0f;
+    savedPos[i][2] = savedPos[i][1] = savedPos[i][0] = -1.0f;
     lastHint[i] = eNoHint;
   }
   intersectionTest1();
@@ -233,6 +240,9 @@ void pyrJumpHelper::Init ( const char* /*commandLine*/ )
 void pyrJumpHelper::Cleanup() {
   bz_removeCustomSlashCommand("test");
   bz_removeCustomSlashCommand("state");
+  bz_removeCustomSlashCommand("save");
+  bz_removeCustomSlashCommand("clear");
+  bz_removeCustomSlashCommand("cmds");
   Flush();
 }
 
@@ -461,11 +471,27 @@ void pyrJumpHelper::pollPlayerHint() {
 }
 
 void pyrJumpHelper::Event(bz_EventData *data) {
-  if (data->eventType == bz_ePlayerUpdateEvent) {
+  if (data->eventType == bz_ePlayerJoinEvent) {
+    auto d = static_cast<bz_PlayerJoinPartEventData_V1 *>(data);
+    if (bz_getPlayerTeam(d->playerID) != eObservers) {
+      bz_sendTextMessage(BZ_SERVER, d->playerID, "Use /cmds to view the available commands");
+    }
+  }
+  else if (data->eventType == bz_ePlayerUpdateEvent) {
     // If they touch ground, can give them the next hint freely
     auto d = static_cast<bz_PlayerUpdateEventData_V1 *>(data);
     if (d->state.pos[2] < EPS)
       lastHintTime[d->playerID] -= ADVICE_PERIOD;
+  }
+  else if (data->eventType == bz_eGetPlayerSpawnPosEvent) {
+    auto d = static_cast<bz_GetPlayerSpawnPosEventData_V1 *>(data);
+    if (savedPos[d->playerID][2] >= 0.0f) {
+      d->pos[0] = savedPos[d->playerID][0];
+      d->pos[1] = savedPos[d->playerID][1];
+      d->pos[2] = savedPos[d->playerID][2] + LARGE_EPS; // Don't spawn inside a building
+      d->rot = savedPos[d->playerID][3];
+      d->handled = true;
+    }
   }
 
   float t = bz_getCurrentTime();
@@ -489,6 +515,25 @@ bool pyrJumpHelper::SlashCommand (int playerID, bz_ApiString command, bz_ApiStri
     assert(b);
     bz_sendTextMessagef(BZ_SERVER, playerID, "z %.2f r %.2f", b->lastKnownState.pos[2], b->lastKnownState.rotation);
     bz_freePlayerRecord(b);
+    return true;
+  }
+  else if (command == "save") {
+    // TODO: Extrapolate.
+    // FIXME: It is possible to save outside the world by saving when dying
+    bz_BasePlayerRecord *b = bz_getPlayerByIndex(playerID);
+    for (int i = 0; i < 3; i++)
+      savedPos[playerID][i] = b->lastKnownState.pos[i];
+    savedPos[playerID][3] = b->lastKnownState.rotation;
+    bz_freePlayerRecord(b);
+    return true;
+  }
+  else if (command == "clear") {
+    savedPos[playerID][2] = -1.0f;
+    return true;
+  }
+  else if (command == "cmds") {
+    bz_sendTextMessage(BZ_SERVER, playerID, "save  - Save the current tank position and orientation for subsequent spawns\n"
+                                            "clear - Clear a saved spawn; spawn normally");
     return true;
   }
   return false;
