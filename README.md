@@ -32,7 +32,7 @@ A : Snake12534 (Co-Founder), alezakos, khonkhortisan, Pac-Man. These are their b
 
 License
 -------
-All the maps is licensed under [Creative Commons Attribution 3.0 Unported](http://creativecommons.org/licenses/by/3.0/).
+All the maps are licensed under [Creative Commons Attribution 3.0 Unported](http://creativecommons.org/licenses/by/3.0/).
 
 How to use
 ----------
