@@ -517,7 +517,7 @@ bool pyrJumpHelper::SlashCommand (int playerID, bz_ApiString command, bz_ApiStri
       }
     }
     
-    logf("Needing hint: %s", isPlayerHintable(b) ? "True" : "False");
+    logMsgf(playerID, "Needing hint: %s", isPlayerHintable(b) ? "True" : "False");
     bz_freePlayerRecord(b);
     return true;
   }
