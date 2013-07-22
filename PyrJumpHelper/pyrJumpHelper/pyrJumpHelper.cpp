@@ -534,16 +534,25 @@ bool pyrJumpHelper::SlashCommand (int playerID, bz_ApiString command, bz_ApiStri
   }
   else if (command == "save") {
     // TODO: Extrapolate.
-    // FIXME: It is possible to save outside the world by saving when dying
     bz_BasePlayerRecord *b = bz_getPlayerByIndex(playerID);
+    
+    // Don't let the player /save when they are exploding or dead
+    if (!b->spawned) {
+      bz_sendTextMessage(BZ_SERVER, playerID, "You can only save your position when you are alive");
+      bz_freePlayerRecord(b);
+      return true;
+    }
+    
     for (int i = 0; i < 3; i++)
       savedPos[playerID][i] = b->lastKnownState.pos[i];
     savedPos[playerID][3] = b->lastKnownState.rotation;
+    bz_sendTextMessage(BZ_SERVER, playerID, "Your current position was saved successfully");
     bz_freePlayerRecord(b);
     return true;
   }
   else if (command == "clear") {
     savedPos[playerID][2] = -1.0f;
+    bz_sendTextMessage(BZ_SERVER, playerID, "Your saved position has been cleared");
     return true;
   }
   else if (command == "advice") {

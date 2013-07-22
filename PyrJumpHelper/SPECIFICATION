@@ -58,3 +58,4 @@ To be decided:
 - How to convey basics like read the tank height meter, you can slide down but if you're too low you have to restart, the use of FPS config
 - How to tell player whether they should adjust position on the pyr (which could involve jumping if its completely wrong) or to restart?
 - New idea: Mark a template for where to get a run up and jump/turn full speed. Outlined by a tank shape on the radar.
+- Somehow tell them that to prevent falling they go turn + forward rather than pure turn.
