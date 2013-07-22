@@ -225,7 +225,7 @@ void pyrJumpHelper::Init ( const char* /*commandLine*/ )
   bz_registerCustomSlashCommand("state", this);
   bz_registerCustomSlashCommand("save", this);
   bz_registerCustomSlashCommand("clear", this);
-  bz_registerCustomSlashCommand("cmds", this);
+  bz_registerCustomSlashCommand("commands", this);
   
   for (int i = 0; i < MaxNumPlayers; i++) {
     lastHintTime[i] = 0.0f;
@@ -242,7 +242,7 @@ void pyrJumpHelper::Cleanup() {
   bz_removeCustomSlashCommand("state");
   bz_removeCustomSlashCommand("save");
   bz_removeCustomSlashCommand("clear");
-  bz_removeCustomSlashCommand("cmds");
+  bz_removeCustomSlashCommand("commands");
   Flush();
 }
 
@@ -294,7 +294,7 @@ Hint calculateCheapHint(const bz_BasePlayerRecord *b) {
   if (!lowFpsRequired)
     return ret;
   
-  return {eLowFpsRequired, lowFpsRequired == 1 ? "Low-ish FPS required. " : "Low FPS required" };
+  return {eLowFpsRequired, lowFpsRequired == 1 ? "Low-ish FPS required. " : "Low FPS required. " };
 }
 
 Hint calculateExpensiveHint(const bz_BasePlayerRecord *b, Hint hint) {
@@ -506,6 +506,15 @@ bool pyrJumpHelper::SlashCommand (int playerID, bz_ApiString command, bz_ApiStri
   if (command == "test") {
     bz_BasePlayerRecord *b = bz_getPlayerByIndex(playerID);
     assert(b);
+    float start = bz_getCurrentTime();
+    const float delay = 0.05;
+    float prev = 0;
+    while (bz_getCurrentTime() - start < 1.0f) {
+      if (bz_getCurrentTime() - prev > delay) {
+        
+      }
+    }
+    
     logf("Needing hint: %s", isPlayerHintable(b) ? "True" : "False");
     bz_freePlayerRecord(b);
     return true;
@@ -513,7 +522,7 @@ bool pyrJumpHelper::SlashCommand (int playerID, bz_ApiString command, bz_ApiStri
   else if (command == "state") {
     bz_BasePlayerRecord *b = bz_getPlayerByIndex(playerID);
     assert(b);
-    bz_sendTextMessagef(BZ_SERVER, playerID, "z %.2f r %.2f", b->lastKnownState.pos[2], b->lastKnownState.rotation);
+    bz_sendTextMessagef(BZ_SERVER, playerID, "Pos %.1f %.1f %.1f rot %.1f", b->lastKnownState.pos[0], b->lastKnownState.pos[1], b->lastKnownState.pos[2], b->lastKnownState.rotation);
     bz_freePlayerRecord(b);
     return true;
   }
@@ -531,7 +540,7 @@ bool pyrJumpHelper::SlashCommand (int playerID, bz_ApiString command, bz_ApiStri
     savedPos[playerID][2] = -1.0f;
     return true;
   }
-  else if (command == "cmds") {
+  else if (command == "commands") {
     bz_sendTextMessage(BZ_SERVER, playerID, "save  - Save the current tank position and orientation for subsequent spawns\n"
                                             "clear - Clear a saved spawn; spawn normally");
     return true;
