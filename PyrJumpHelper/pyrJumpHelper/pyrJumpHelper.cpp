@@ -543,11 +543,13 @@ bool pyrJumpHelper::SlashCommand (int playerID, bz_ApiString command, bz_ApiStri
     for (int i = 0; i < 3; i++)
       savedPos[playerID][i] = b->lastKnownState.pos[i];
     savedPos[playerID][3] = b->lastKnownState.rotation;
+    bz_sendTextMessage(BZ_SERVER, playerID, "Your current position was saved successfully");
     bz_freePlayerRecord(b);
     return true;
   }
   else if (command == "clear") {
     savedPos[playerID][2] = -1.0f;
+    bz_sendTextMessage(BZ_SERVER, playerID, "Your saved position has been cleared");
     return true;
   }
   else if (command == "commands") {
