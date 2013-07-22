@@ -542,8 +542,8 @@ bool pyrJumpHelper::SlashCommand (int playerID, bz_ApiString command, bz_ApiStri
     return true;
   }
   else if (command == "commands") {
-    bz_sendTextMessage(BZ_SERVER, playerID, "save  - Save the current tank position and orientation for subsequent spawns\n"
-                                            "clear - Clear a saved spawn; spawn normally");
+    bz_sendTextMessage(BZ_SERVER, playerID, "save  - Save the current tank position and orientation for subsequent spawns");
+    bz_sendTextMessage(BZ_SERVER, playerID, "clear - Clear a saved spawn; spawn normally");
     return true;
   }
   return false;
