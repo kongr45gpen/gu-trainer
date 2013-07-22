@@ -1,5 +1,4 @@
 options
-#-loadplugin phoenix.so
 -a 0 0
 -ms 3
 -mp 0,20,0,0,0,20
@@ -17,7 +16,7 @@ end
 
 world
 name HiX PyrJumpHelper
-size 100.0
+size 110.0
 flagHeight 0.0
 end
 
