@@ -35,8 +35,14 @@ end
 
 # The front on jump; the most basic
 box
-position -80.3 -2.4 0
+position -80.3 -2.4 -0.01
 size 3.3 1.54 0
+texture zone_ground
+end
+box
+position -91.8 -2.4 -0.01
+size 8.2 1.54 0
+texture treads.png
 end
 
 # red team base
