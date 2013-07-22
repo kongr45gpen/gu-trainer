@@ -524,7 +524,7 @@ bool pyrJumpHelper::SlashCommand (int playerID, bz_ApiString command, bz_ApiStri
   else if (command == "state") {
     bz_BasePlayerRecord *b = bz_getPlayerByIndex(playerID);
     assert(b);
-    bz_sendTextMessagef(BZ_SERVER, playerID, "Pos %.1f %.1f %.1f rot %.1f", b->lastKnownState.pos[0], b->lastKnownState.pos[1], b->lastKnownState.pos[2], b->lastKnownState.rotation);
+    bz_sendTextMessagef(BZ_SERVER, playerID, "Pos %.2f %.2f %.2f rot %.2f", b->lastKnownState.pos[0], b->lastKnownState.pos[1], b->lastKnownState.pos[2], b->lastKnownState.rotation);
     bz_freePlayerRecord(b);
     return true;
   }
