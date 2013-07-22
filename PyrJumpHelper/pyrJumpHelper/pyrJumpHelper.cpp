@@ -508,14 +508,15 @@ bool pyrJumpHelper::SlashCommand (int playerID, bz_ApiString command, bz_ApiStri
   if (command == "test") {
     bz_BasePlayerRecord *b = bz_getPlayerByIndex(playerID);
     assert(b);
-    float start = bz_getCurrentTime();
+    // Abandoned test was gonna test flying demonstration but got lazy
+    /*float start = bz_getCurrentTime();
     const float delay = 0.05;
     float prev = 0;
     while (bz_getCurrentTime() - start < 1.0f) {
       if (bz_getCurrentTime() - prev > delay) {
         
       }
-    }
+    }*/
     
     logMsgf(playerID, "Needing hint: %s", isPlayerHintable(b) ? "True" : "False");
     bz_freePlayerRecord(b);
