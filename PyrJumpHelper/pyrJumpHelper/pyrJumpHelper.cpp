@@ -474,7 +474,7 @@ void pyrJumpHelper::Event(bz_EventData *data) {
   if (data->eventType == bz_ePlayerJoinEvent) {
     auto d = static_cast<bz_PlayerJoinPartEventData_V1 *>(data);
     if (bz_getPlayerTeam(d->playerID) != eObservers) {
-      bz_sendTextMessage(BZ_SERVER, d->playerID, "Use /cmds to view the available commands");
+      bz_sendTextMessage(BZ_SERVER, d->playerID, "Use /commands to view the available commands");
     }
   }
   else if (data->eventType == bz_ePlayerUpdateEvent) {
