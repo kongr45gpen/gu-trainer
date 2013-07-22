@@ -65,7 +65,7 @@ bool projectionsOverlap(float x[4], float hw) {
 
 // Apply Separating Axis Theorem in A's local space
 bool intersectsHelper(Rect a, Rect b) {
-// B center relative to A
+  // B center relative to A
   float b_x = b.x - a.x;
   float b_y = b.y - a.y;
   bz_debugMessagef(5, "B relative to A is (%.2f, %.2f)", b_x, b_y);
@@ -227,6 +227,7 @@ void pyrJumpHelper::Init ( const char* /*commandLine*/ )
   bz_registerCustomSlashCommand("clear", this);
   bz_registerCustomSlashCommand("commands", this);
   
+  lastPollTime = 0.0f;
   for (int i = 0; i < MaxNumPlayers; i++) {
     lastHintTime[i] = 0.0f;
     lastPos[i][2] = lastPos[i][1] = lastPos[i][0] = -1.0f;
