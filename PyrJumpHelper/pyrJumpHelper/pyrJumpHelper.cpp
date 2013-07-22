@@ -168,6 +168,7 @@ float distanceFromBase(float x, float y) {
 
 #define TANK_HALFWIDTH 1.4
 #define TANK_HALFLENGTH 3.0
+#define TANK_LENGTH (2.0 * TANK_HALFLENGTH)
 #define TANK_HEIGHT 2.05
 #define TANK_ANG_VEL (PI / 4.0)
 
@@ -225,6 +226,7 @@ void pyrJumpHelper::Init ( const char* /*commandLine*/ )
   bz_registerCustomSlashCommand("state", this);
   bz_registerCustomSlashCommand("save", this);
   bz_registerCustomSlashCommand("clear", this);
+  bz_registerCustomSlashCommand("advice", this);
   bz_registerCustomSlashCommand("commands", this);
   
   lastPollTime = 0.0f;
@@ -243,6 +245,7 @@ void pyrJumpHelper::Cleanup() {
   bz_removeCustomSlashCommand("state");
   bz_removeCustomSlashCommand("save");
   bz_removeCustomSlashCommand("clear");
+  bz_removeCustomSlashCommand("advice");
   bz_removeCustomSlashCommand("commands");
   Flush();
 }
@@ -543,9 +546,31 @@ bool pyrJumpHelper::SlashCommand (int playerID, bz_ApiString command, bz_ApiStri
     savedPos[playerID][2] = -1.0f;
     return true;
   }
+  else if (command == "advice") {
+    static float pads[][3] = {
+      {-85.0f, -2.4f, 0.0f},
+    };
+    static string advice[] = {
+      "Face 90 degrees. Drive and jump forward full speed with no turn. 2nd jump full speed to the right."
+    };
+    bz_BasePlayerRecord *b = bz_getPlayerByIndex(playerID);
+    const bz_PlayerUpdateState &s = b->lastKnownState;
+    int i;
+    for (i = 0; i < sizeof(pads) / sizeof(pads[0]); i++) {
+      if (SQR(s.pos[0] - pads[i][0]) + SQR(s.pos[1] - pads[i][1]) + SQR(s.pos[2] - pads[i][2]) < SQR(2.0 * TANK_LENGTH)) {
+        break;
+      }
+    }
+    if (i < sizeof(pads) / sizeof(pads[0])) { // found
+      bz_sendTextMessage(BZ_SERVER, playerID, advice[i].c_str());
+    }
+    bz_freePlayerRecord(b);
+    return true;
+  }
   else if (command == "commands") {
-    bz_sendTextMessage(BZ_SERVER, playerID, "save  - Save the current tank position and orientation for subsequent spawns");
-    bz_sendTextMessage(BZ_SERVER, playerID, "clear - Clear a saved spawn; spawn normally");
+    bz_sendTextMessage(BZ_SERVER, playerID, "advice - Stand on a purple jump pad and reveal the jumping routine");
+    bz_sendTextMessage(BZ_SERVER, playerID, "clear  - Clear a saved spawn; spawn normally");
+    bz_sendTextMessage(BZ_SERVER, playerID, "save   - Save the current tank position and orientation for subsequent spawns");
     return true;
   }
   return false;
