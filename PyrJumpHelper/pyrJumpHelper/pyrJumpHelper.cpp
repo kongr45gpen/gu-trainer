@@ -558,9 +558,11 @@ bool pyrJumpHelper::SlashCommand (int playerID, bz_ApiString command, bz_ApiStri
   else if (command == "advice") {
     static float pads[][3] = {
       {-85.0f, -2.4f, 0.0f},
+      {23.6f, 48.06f, 0.0f},
     };
     static string advice[] = {
-      "Face 90 degrees. Drive and jump forward full speed with no turn. 2nd jump full speed to the right."
+      "Face 90 degrees. Drive and jump forward full speed with no turn. 2nd jump full speed to the right.",
+      "Face 90 degrees. Drive and jump backward full speed with no turn. 2nd jump full speed to the right.",
     };
     bz_BasePlayerRecord *b = bz_getPlayerByIndex(playerID);
     const bz_PlayerUpdateState &s = b->lastKnownState;
