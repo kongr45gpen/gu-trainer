@@ -33,16 +33,48 @@ rotation 0.0
 size     30.0 30.0 15.0
 end
 
-# The front on jump; the most basic
+# The front-on jump; the most basic
 box
 position -80.3 -2.4 -0.01
 size 3.3 1.54 0
 texture zone_ground
+noradar
+end
+arc
+divisions 4
+angle 360
+ratio 0.2
+rotation 45
+size 1.4142135623730950488016887242097 1.4142135623730950488016887242097 0.005
+scale 3.3 1.54 1
+shift -80.3 -2.4 -0.01
 end
 box
 position -91.8 -2.4 -0.01
 size 8.2 1.54 0
-texture treads.png
+texture treads
+end
+
+# The backward jump
+box
+position 23.6 48.06 -0.01
+size 3.3 1.54 0
+texture zone_ground
+noradar
+end
+arc
+divisions 4
+angle 360
+ratio 0.2
+rotation 45
+size 1.4142135623730950488016887242097 1.4142135623730950488016887242097 0.005
+scale 3.3 1.54 1
+shift 23.6 48.06 -0.01
+end
+box
+position 31.9 48.06 -0.01
+size 5 1.54 0
+texture treads
 end
 
 # red team base
