@@ -24,11 +24,21 @@ A: R.O. has not decided yet, but we will probably not allow any harsh langauge.
 
 A: None as of July 2013.
 
-**Q: Who are the active contributors in R.O.?**
-
-A : Snake12534 (Co-Founder), alezakos, khonkhortisan, Pac-Man. These are their bzflag callsigns, names may be different in https://github.com/kongr45gpen/gu-trainer.
-
 **If you have any further questions, don't hesitate to contact us; We'll try to answer them as soon as possible.**
+
+Authors
+-------
+### Active R.O. Contributors
+ * [Snake12534](https://github.com/Snake12534) (Co-Founder)
+ * [Pac-Man](https://github.com/achoopic)
+ * [khonkhortisan](https://github.com/khonkhortisan)
+ * [alezakos](https://github.com/kongr45gpen)
+
+### Thanks
+Many thanks to all the people who provided us their valuable assistance, especially:
+ * allejo
+ * blast007
+ * tw1sted
 
 License
 -------
