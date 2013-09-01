@@ -575,6 +575,9 @@ bool pyrJumpHelper::SlashCommand (int playerID, bz_ApiString command, bz_ApiStri
     if (i < sizeof(pads) / sizeof(pads[0])) { // found
       bz_sendTextMessage(BZ_SERVER, playerID, advice[i].c_str());
     }
+    else {
+      bz_sendTextMessage(BZ_SERVER, playerID, "You need to be on a purple pad");
+    }
     bz_freePlayerRecord(b);
     return true;
   }
