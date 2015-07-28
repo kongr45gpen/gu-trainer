@@ -29,7 +29,7 @@ A: None as of July 2013.
 Authors
 -------
 ### Active R.O. Contributors
- * [Snake12534](https://github.com/Snake12534) (Co-Founder)
+ * [Snake12534](https://github.com/Snake12534) (Founder)
  * [Pac-Man](https://github.com/achoopic)
  * [khonkhortisan](https://github.com/khonkhortisan)
  * [alezakos](https://github.com/kongr45gpen)
